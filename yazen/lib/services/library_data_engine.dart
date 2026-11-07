@@ -2,6 +2,7 @@ import '../models/library_query.dart';
 import '../models/media_track.dart';
 import 'folder_identity.dart';
 import 'library_search_service.dart';
+import '../diagnostics/core/diagnostics_service.dart';
 
 /// Immutable, indexed view of one complete local-library generation.
 ///
@@ -45,12 +46,13 @@ class LibraryIndexSnapshot {
       (byFolder[identity] ??= <MediaTrack>[]).add(track);
     }
 
-    final folderList = byFolder.keys.toList(growable: false)..sort((a, b) {
-      final byLabel = folderDisplayName(
-        a,
-      ).toLowerCase().compareTo(folderDisplayName(b).toLowerCase());
-      return byLabel == 0 ? a.compareTo(b) : byLabel;
-    });
+    final folderList = byFolder.keys.toList(growable: false)
+      ..sort((a, b) {
+        final byLabel = folderDisplayName(
+          a,
+        ).toLowerCase().compareTo(folderDisplayName(b).toLowerCase());
+        return byLabel == 0 ? a.compareTo(b) : byLabel;
+      });
 
     return LibraryIndexSnapshot._(
       revision: revision,
@@ -123,13 +125,28 @@ class LibraryDataEngine {
     required Iterable<MediaTrack> tracks,
     required Iterable<String> hiddenTrackIds,
   }) {
-    _snapshot = LibraryIndexSnapshot.build(
-      revision: ++_revision,
-      tracks: tracks,
-      hiddenTrackIds: hiddenTrackIds,
-    );
-    invalidateQueries();
-    return _snapshot;
+    final span = DiagnosticsService.instance.startSpan('library_index_snapshot_build', data: <String, Object?>{
+      'revision': _revision + 1,
+      'inputTrackCount': tracks is List ? tracks.length : null,
+    });
+    try {
+      _snapshot = LibraryIndexSnapshot.build(
+        revision: ++_revision,
+        tracks: tracks,
+        hiddenTrackIds: hiddenTrackIds,
+      );
+      invalidateQueries();
+      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{
+        'trackCount': _snapshot.allTracks.length,
+        'visibleTrackCount': _snapshot.visibleAudioTracks.length,
+        'hiddenTrackCount': _snapshot.hiddenAudioTracks.length,
+        'folderCount': _snapshot.folders.length,
+      });
+      return _snapshot;
+    } catch (error) {
+      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{'error': error.toString()});
+      rethrow;
+    }
   }
 
   /// Invalidates queries whose result depends on mutable playlist metadata.
@@ -178,7 +195,14 @@ class LibraryDataEngine {
       lastPlayed: lastPlayed,
       dynamicRevision: dynamicRevision,
     );
+    final searchSpan = DiagnosticsService.instance.startSpan('library_search_filter', data: <String, Object?>{
+      'sourceCount': ordered.length,
+      'queryLength': query.length,
+      'sort': sort.name,
+      'filters': filters.map((filter) => filter.name).toList(growable: false),
+    });
     final result = _searchService.search(ordered, query);
+    DiagnosticsService.instance.endSpan(searchSpan, 'complete', <String, Object?>{'resultCount': result.length});
 
     _querySource = source;
     _querySort = sort;
@@ -206,6 +230,11 @@ class LibraryDataEngine {
       return _orderedCache!;
     }
 
+    final transformSpan = DiagnosticsService.instance.startSpan('library_sort_filter', data: <String, Object?>{
+      'sourceCount': source.length,
+      'sort': sort.name,
+      'filters': filters.map((filter) => filter.name).toList(growable: false),
+    });
     final filtered = source.where((track) {
       if (filters.contains(LibraryFilter.favorites) && !isFavorite(track)) {
         return false;
@@ -228,14 +257,14 @@ class LibraryDataEngine {
     final playCounts =
         sort == LibrarySort.mostPlayed
             ? <String, int>{
-              for (final track in candidates) track.id: playCount(track.id),
-            }
+                for (final track in candidates) track.id: playCount(track.id),
+              }
             : const <String, int>{};
     final playedAt =
         sort == LibrarySort.recentlyPlayedFirst
             ? <String, DateTime?>{
-              for (final track in candidates) track.id: lastPlayed(track.id),
-            }
+                for (final track in candidates) track.id: lastPlayed(track.id),
+              }
             : const <String, DateTime?>{};
     candidates.sort(
       (a, b) => _compareTracks(
@@ -253,6 +282,7 @@ class LibraryDataEngine {
     _orderedFilters = Set<LibraryFilter>.unmodifiable(filters);
     _orderedDynamicRevision = dynamicRevision;
     _orderedCache = result;
+    DiagnosticsService.instance.endSpan(transformSpan, 'complete', <String, Object?>{'resultCount': result.length});
     return result;
   }
 
@@ -266,14 +296,14 @@ class LibraryDataEngine {
     final playCounts =
         sort == LibrarySort.mostPlayed
             ? <String, int>{
-              for (final track in sorted) track.id: playCount(track.id),
-            }
+                for (final track in sorted) track.id: playCount(track.id),
+              }
             : const <String, int>{};
     final playedAt =
         sort == LibrarySort.recentlyPlayedFirst
             ? <String, DateTime?>{
-              for (final track in sorted) track.id: lastPlayed(track.id),
-            }
+                for (final track in sorted) track.id: lastPlayed(track.id),
+              }
             : const <String, DateTime?>{};
     sorted.sort(
       (a, b) => _compareTracks(

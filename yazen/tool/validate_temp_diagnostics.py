@@ -22,19 +22,25 @@ native = (ROOT / "android/app/src/main/kotlin/com/yassine/yazen/MainActivity.kt"
 workflow = (ROOT / ".github/workflows/flutter-ci.yml").read_text()
 
 required = [
-    ("Flutter frame timing callback", "addTimingsCallback" in service),
-    ("slow frame tracking", "slow_frame" in service and "verySlowFrames" in service),
-    ("scroll latency and velocity", "startToFirstUpdateMs" in service and "estimatedPixelsPerSecond" in service),
-    ("bounded event history", "_maxEvents = 12000" in service and "removeFirst()" in service),
-    ("JSON and TXT report", "yazen-diagnostics-$stamp.json" in service and "yazen-diagnostics-$stamp.txt" in service),
+    ("Flutter frame timing callback", "addTimingsCallback" in service and "frame_timing" in service),
+    ("refresh-rate-aware frame budget", "frameBudgetUs" in service and "displayRefreshRateHz" in service),
+    ("scroll and pointer velocity samples", "velocityPixelsPerSecond" in service and "velocityXPerSecond" in service and "pointer_move" in service),
+    ("bounded dashboard plus durable journal", "_dashboardEventLimit = 12000" in service and "_pendingJournalLimit" in service and "openWrite(mode: FileMode.append)" in service),
+    ("full-session JSONL plus JSON and Markdown export", "jsonl" in service.lower() and "yazen-pi-session-$stamp.json" in service and "yazen-pi-session-$stamp.md" in service),
     ("session starts at app launch", "DiagnosticsService.instance.start()" in main),
-    ("Settings export entry", "Export diagnostic logs" in settings),
-    ("artwork instrumentation", "artwork_load_complete" in artwork and "artwork_disk_cache_hit" in artwork),
-    ("MediaStore query timing", "media_query_all_songs" in media_library and "media_query_videos" in media_library and "durationMs" in media_library),
-    ("Android process memory and CPU snapshot", "processPssKb" in native and "processCpuPercentSincePreviousSnapshot" in native),
-    ("Android Downloads export", "YAZEN Diagnostics" in native),
-    ("periodic process resource sampling", "Duration(seconds: 5)" in service and "resourceSnapshotsDuringSession" in service),
+    ("Settings export entry", "Export complete session" in settings),
+    ("artwork tracing, cache and first-visible timing", "startSpan('artwork_load'" in artwork and "artwork_disk_cache_hit" in artwork and "artwork_first_frame_visible" in artwork),
+    ("MediaStore query tracing", "startSpan(operation)" in media_library and "endSpan(span, 'complete'" in media_library),
+    ("Android process memory and CPU snapshot", "processPssKb" in native and "processCpuPercentSincePreviousSnapshot" in native and "threadCpuSamples" in native),
+    ("Android Downloads journal streaming", "exportDiagnosticJournal" in native and "YAZEN Diagnostics" in native),
+    ("hybrid resource sampling", "Duration(seconds: _deepInvestigation ? 1 : 5)" in service and "resourceSnapshotCountInJournal" in service),
     ("diagnostics CI branch", "diagnostics/temp-performance-v1" in workflow),
+    ("global pointer capture", "onPointerMove: DiagnosticsService.instance.pointerMove" in main and "onPointerSignal: DiagnosticsService.instance.pointerSignal" in main),
+    ("trace correlation and full journal analysis", "activeSpanFrameCorrelations" in service and "_buildAnalysisFromJournal" in service),
+    ("diagnostics overhead instrumentation", "_recordCostSamples" in service and "_journalDrainTotalUs" in service),
+    ("library pipeline stage spans", "library_sort_filter" in (ROOT / "lib/services/library_data_engine.dart").read_text() and "library_index_snapshot_build" in (ROOT / "lib/services/library_data_engine.dart").read_text()),
+    ("playback and user-action journal coverage", "playback_track_requested" in (ROOT / "lib/controllers/hybrid_music_controller.dart").read_text() and "sleep_timer_activated" in (ROOT / "lib/services/hybrid_audio_handler.dart").read_text()),
+    ("Flutter build/layout/paint deep profiling", "debugProfileBuildsEnabled" in service and "debugProfileLayoutsEnabled" in service and "debugProfilePaintsEnabled" in service),
 ]
 failed = [label for label, passed in required if not passed]
 for label, passed in required:

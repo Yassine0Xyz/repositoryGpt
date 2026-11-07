@@ -10,4 +10,21 @@ void main() {
 
     expect(diagnostics.retainedEventCount, before + 1);
   });
+
+  test('uses a 60 Hz fallback frame budget before native display sampling', () {
+    final diagnostics = DiagnosticsService.instance;
+    expect(diagnostics.frameBudgetMs, closeTo(16.6667, 0.01));
+  });
+
+  test('creates distinct span identifiers and retains operation context', () {
+    final diagnostics = DiagnosticsService.instance;
+    final first = diagnostics.startSpan('test_operation');
+    final second = diagnostics.startSpan('test_operation');
+
+    expect(first.spanId, isNot(second.spanId));
+    expect(first.traceId, isNot(second.traceId));
+
+    diagnostics.endSpan(first, 'complete');
+    diagnostics.endSpan(second, 'complete');
+  });
 }

@@ -395,48 +395,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const SizedBox(height: 24),
-          _SectionLabel(label: 'Temporary diagnostics', tokens: tokens),
+          _SectionLabel(label: 'Performance Intelligence', tokens: tokens),
           _SettingsCard(
             tokens: tokens,
             child: Column(
               children: <Widget>[
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.monitor_heart_outlined,
-                    color: tokens.accent,
-                  ),
-                  title: const Text(
-                    'Performance monitor',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  subtitle: Text(
-                    'Live frames, scrolling, navigation and resource snapshots',
-                    style: TextStyle(color: tokens.textSecondary),
-                  ),
+                  leading: Icon(Icons.monitor_heart_outlined, color: tokens.accent),
+                  title: const Text('Performance monitor', style: TextStyle(fontWeight: FontWeight.w800)),
+                  subtitle: Text('Full session journal, profiling and causal investigation', style: TextStyle(color: tokens.textSecondary)),
                   trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap:
-                      () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const DiagnosticsScreen(),
-                        ),
-                      ),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DiagnosticsScreen())),
                 ),
                 Divider(color: tokens.divider, height: 1),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.file_download_outlined,
-                    color: tokens.accent,
-                  ),
-                  title: const Text(
-                    'Export diagnostic logs',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  subtitle: Text(
-                    'Save the current session as JSON and TXT in Downloads',
-                    style: TextStyle(color: tokens.textSecondary),
-                  ),
+                  leading: Icon(Icons.file_download_outlined, color: tokens.accent),
+                  title: const Text('Export complete session', style: TextStyle(fontWeight: FontWeight.w800)),
+                  subtitle: Text('Raw JSONL journal, analysis JSON and Markdown report', style: TextStyle(color: tokens.textSecondary)),
                   onTap: _exportDiagnosticLogs,
                 ),
               ],
@@ -471,25 +448,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       showDialog<void>(
         context: context,
-        builder:
-            (context) => AlertDialog(
-              title: const Text('Diagnostic logs exported'),
-              content: SelectableText(
-                '${result.eventCount} events saved:\n\n${result.paths.join('\n\n')}',
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
+        builder: (context) => AlertDialog(
+          title: const Text('Diagnostic logs exported'),
+          content: SelectableText('${result.eventCount} events saved:\n\n${result.paths.join('\n\n')}'),
+          actions: <Widget>[TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Unable to export logs: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to export logs: $error')));
     }
   }
 

@@ -137,10 +137,9 @@ public class VideoThumbnailPlugin implements FlutterPlugin, MethodCallHandler {
             throw new IllegalStateException("Unable to decode a frame from the video.");
         }
 
-        try {
-            final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             if (!bitmap.compress(intToFormat(format), quality, stream)) {
-                throw new IllegalStateException("Unable to encode the video thumbnail.");
+                throw new IOException("Unable to encode the video thumbnail.");
             }
             return stream.toByteArray();
         } finally {
