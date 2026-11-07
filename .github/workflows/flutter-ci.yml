@@ -1,0 +1,61 @@
+name: YAZEN Player Diagnostics CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: yazen
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.8
+          channel: stable
+          cache: true
+
+      - name: Print Flutter and Dart versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Verify Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Validate temporary diagnostics wiring
+        run: python3 tool/validate_temp_diagnostics.py
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build Android debug APK
+        run: flutter build apk --debug --target-platform android-arm64
+
+      - name: Upload Android debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: yazen-player-debug-apk
+          path: yazen/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error

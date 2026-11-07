@@ -1,0 +1,30 @@
+# Flutter/Dart generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+build/
+coverage/
+
+# IDE/editor state
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local signing and environment files
+.env
+.env.*
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# Generated native directories when using a partial source drop
+# Keep the platform setup snippets and raw resource committed.
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh

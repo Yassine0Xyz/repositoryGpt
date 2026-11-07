@@ -1,0 +1,6 @@
+# Copy this file to android/key.properties and fill it locally.
+# Never commit android/key.properties or the keystore.
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=yazen
+storeFile=/absolute/path/to/yazen-upload-keystore.jks
