@@ -60,7 +60,6 @@ class LibraryTrackViewport extends StatelessWidget {
         scrollCacheExtent: cache,
         addAutomaticKeepAlives: addAutomaticKeepAlives,
         addRepaintBoundaries: true,
-        semanticChildCount: semanticChildCount ?? itemCount,
       );
     }
 

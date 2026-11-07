@@ -139,7 +139,8 @@ class _LocalEntityTracksScreenState extends State<LocalEntityTracksScreen> {
                                     ),
                                   ),
                               isFavorite: controller.isFavorite(track),
-                              onFavorite: () => controller.toggleFavorite(track),
+                              onFavorite:
+                                  () => controller.toggleFavorite(track),
                               onAddToPlaylist:
                                   () => showAddToPlaylistSheet(context, track),
                             ),

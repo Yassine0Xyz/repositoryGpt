@@ -158,8 +158,7 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     return _libraryDataEngine.queryTracks(
       source: tracks,
       sort: librarySort,
-      filters:
-          _libraryFiltersByTab[_selectedTab] ?? const <LibraryFilter>{},
+      filters: _libraryFiltersByTab[_selectedTab] ?? const <LibraryFilter>{},
       query: searchQuery,
       isFavorite: _playlistManager.isFavorite,
       playCount: _playlistManager.playCount,
@@ -274,10 +273,7 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     if (_usesLinuxImportedFileMode) {
-      await loadLibrary(
-        requestPermission: false,
-        preserveCurrentLibrary: true,
-      );
+      await loadLibrary(requestPermission: false, preserveCurrentLibrary: true);
       return;
     }
     if (!await _library.recheckPermission()) {
@@ -285,10 +281,7 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
       return;
     }
-    await loadLibrary(
-      requestPermission: false,
-      preserveCurrentLibrary: true,
-    );
+    await loadLibrary(requestPermission: false, preserveCurrentLibrary: true);
   }
 
   Future<void> _loadSecondaryLibraryData([int? requestedGeneration]) async {
@@ -621,4 +614,3 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     super.dispose();
   }
 }
-

@@ -24,10 +24,10 @@ class DiagnosticsService {
   final Stopwatch _sessionClock = Stopwatch()..start();
   bool _started = false;
   bool _recording = true;
-  Timer? _resourceTimer;
   bool _resourceSnapshotInFlight = false;
   Future<PackageInfo>? _packageInfoFuture;
-  final List<Map<String, Object?>> _resourceSnapshots = <Map<String, Object?>>[];
+  final List<Map<String, Object?>> _resourceSnapshots =
+      <Map<String, Object?>>[];
   int _frameCount = 0;
   int _slowFrames = 0;
   int _verySlowFrames = 0;
@@ -43,7 +43,8 @@ class DiagnosticsService {
   int? _previousScrollElapsedMs;
   int? _scrollStartElapsedMs;
   double? _previousScrollPixels;
-  final _DiagnosticsLifecycleObserver _lifecycleObserver = _DiagnosticsLifecycleObserver();
+  final _DiagnosticsLifecycleObserver _lifecycleObserver =
+      _DiagnosticsLifecycleObserver();
 
   bool get recording => _recording;
   int get frameCount => _frameCount;
@@ -53,12 +54,16 @@ class DiagnosticsService {
   int get scrollSessions => _scrollSessions;
   int get routeChanges => _routeChanges;
   int get retainedEventCount => _events.length;
-  double get averageFrameMs => _frameCount == 0 ? 0 : _totalFrameMicros / _frameCount / 1000;
-  double get averageBuildMs => _frameCount == 0 ? 0 : _totalBuildMicros / _frameCount / 1000;
-  double get averageRasterMs => _frameCount == 0 ? 0 : _totalRasterMicros / _frameCount / 1000;
+  double get averageFrameMs =>
+      _frameCount == 0 ? 0 : _totalFrameMicros / _frameCount / 1000;
+  double get averageBuildMs =>
+      _frameCount == 0 ? 0 : _totalBuildMicros / _frameCount / 1000;
+  double get averageRasterMs =>
+      _frameCount == 0 ? 0 : _totalRasterMicros / _frameCount / 1000;
   double get estimatedFps => averageFrameMs <= 0 ? 0 : 1000 / averageFrameMs;
   int get sessionMilliseconds => _sessionClock.elapsedMilliseconds;
-  Map<String, Object?>? get latestResourceSnapshot => _resourceSnapshots.isEmpty ? null : _resourceSnapshots.last;
+  Map<String, Object?>? get latestResourceSnapshot =>
+      _resourceSnapshots.isEmpty ? null : _resourceSnapshots.last;
   int get p95FrameMs => _percentile(_recentFrameMicros, .95) ~/ 1000;
 
   void start() {
@@ -84,7 +89,7 @@ class DiagnosticsService {
       });
     };
     unawaited(_capturePeriodicResourceSnapshot());
-    _resourceTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    Timer.periodic(const Duration(seconds: 5), (_) {
       if (_recording) unawaited(_capturePeriodicResourceSnapshot());
     });
     PlatformDispatcher.instance.onError = (error, stack) {
@@ -107,7 +112,10 @@ class DiagnosticsService {
     }
   }
 
-  void record(String type, [Map<String, Object?> data = const <String, Object?>{}]) {
+  void record(
+    String type, [
+    Map<String, Object?> data = const <String, Object?>{},
+  ]) {
     if (!_recording && type != 'recording_resumed') return;
     final event = <String, Object?>{
       'timestamp': DateTime.now().toUtc().toIso8601String(),
@@ -136,16 +144,21 @@ class DiagnosticsService {
     record('scroll_start', <String, Object?>{'axis': axis, 'pixels': pixels});
   }
 
-  void scrollUpdated({required double? delta, required double pixels, required double maxExtent}) {
+  void scrollUpdated({
+    required double? delta,
+    required double pixels,
+    required double maxExtent,
+  }) {
     if (!_recording) return;
     _scrollUpdates++;
     final now = _sessionClock.elapsedMilliseconds;
     final previousTime = _previousScrollElapsedMs;
     final previousPixels = _previousScrollPixels;
     final elapsed = previousTime == null ? null : now - previousTime;
-    final velocity = (elapsed != null && elapsed > 0 && previousPixels != null)
-        ? ((pixels - previousPixels) / elapsed * 1000)
-        : null;
+    final velocity =
+        (elapsed != null && elapsed > 0 && previousPixels != null)
+            ? ((pixels - previousPixels) / elapsed * 1000)
+            : null;
     _previousScrollElapsedMs = now;
     _previousScrollPixels = pixels;
     // Per-update samples make fast-drag responsiveness measurable and can be
@@ -156,13 +169,19 @@ class DiagnosticsService {
       'maxExtent': maxExtent,
       'estimatedPixelsPerSecond': velocity,
       'intervalMs': elapsed,
-      'startToFirstUpdateMs': previousTime == null && _scrollStartElapsedMs != null ? now - _scrollStartElapsedMs! : null,
+      'startToFirstUpdateMs':
+          previousTime == null && _scrollStartElapsedMs != null
+              ? now - _scrollStartElapsedMs!
+              : null,
     });
   }
 
   void scrollEnded({required double pixels, required double maxExtent}) {
     if (!_recording) return;
-    record('scroll_end', <String, Object?>{'pixels': pixels, 'maxExtent': maxExtent});
+    record('scroll_end', <String, Object?>{
+      'pixels': pixels,
+      'maxExtent': maxExtent,
+    });
     _scrollStartElapsedMs = null;
     _previousScrollElapsedMs = null;
     _previousScrollPixels = null;
@@ -199,10 +218,15 @@ class DiagnosticsService {
     }
   }
 
-  Future<Map<String, Object?>> _resourceSnapshot({bool includeStorage = true}) async {
+  Future<Map<String, Object?>> _resourceSnapshot({
+    bool includeStorage = true,
+  }) async {
     Map<String, Object?> native = <String, Object?>{};
     try {
-      final result = await _native.invokeMapMethod<String, Object?>('resourceSnapshot', <String, Object?>{'includeStorage': includeStorage});
+      final result = await _native.invokeMapMethod<String, Object?>(
+        'resourceSnapshot',
+        <String, Object?>{'includeStorage': includeStorage},
+      );
       if (result != null) native = result;
     } catch (error) {
       native = <String, Object?>{'nativeSnapshotError': error.toString()};
@@ -235,7 +259,9 @@ class DiagnosticsService {
       _resourceSnapshots.add(snapshot);
       record('resource_snapshot', snapshot);
     } catch (error) {
-      record('resource_snapshot_failed', <String, Object?>{'error': error.toString()});
+      record('resource_snapshot_failed', <String, Object?>{
+        'error': error.toString(),
+      });
     } finally {
       _resourceSnapshotInFlight = false;
     }
@@ -266,7 +292,9 @@ class DiagnosticsService {
   Map<String, Object?> _summary() => <String, Object?>{
     'sessionDurationMs': _sessionClock.elapsedMilliseconds,
     'frameCount': _frameCount,
-    'estimatedFpsFromAverageFrameTime': double.parse(estimatedFps.toStringAsFixed(2)),
+    'estimatedFpsFromAverageFrameTime': double.parse(
+      estimatedFps.toStringAsFixed(2),
+    ),
     'averageFrameMs': double.parse(averageFrameMs.toStringAsFixed(3)),
     'averageBuildMs': double.parse(averageBuildMs.toStringAsFixed(3)),
     'averageRasterMs': double.parse(averageRasterMs.toStringAsFixed(3)),
@@ -281,7 +309,9 @@ class DiagnosticsService {
     'eventLimit': _maxEvents,
     'peakProcessPssKb': _maxResourceValue('processPssKb'),
     'peakJavaHeapUsedBytes': _maxResourceValue('javaHeapUsedBytes'),
-    'averageProcessCpuPercent': _averageResourceValue('processCpuPercentSincePreviousSnapshot'),
+    'averageProcessCpuPercent': _averageResourceValue(
+      'processCpuPercentSincePreviousSnapshot',
+    ),
   };
 
   Future<DiagnosticExport> export() async {
@@ -294,7 +324,9 @@ class DiagnosticsService {
       'generatedAt': DateTime.now().toUtc().toIso8601String(),
       'summary': _summary(),
       'resourceSnapshot': resources,
-      'resourceSnapshotsDuringSession': List<Map<String, Object?>>.unmodifiable(_resourceSnapshots),
+      'resourceSnapshotsDuringSession': List<Map<String, Object?>>.unmodifiable(
+        _resourceSnapshots,
+      ),
       'events': List<Map<String, Object?>>.unmodifiable(_events),
       'notes': <String>[
         'Frame timings are Flutter engine timings captured through addTimingsCallback.',
@@ -304,16 +336,19 @@ class DiagnosticsService {
       ],
     };
     final json = const JsonEncoder.withIndent('  ').convert(jsonReport);
-    final text = StringBuffer()
-      ..writeln('YAZEN-PLAYER DIAGNOSTIC SESSION')
-      ..writeln('Generated: ${jsonReport['generatedAt']}')
-      ..writeln('\nSUMMARY')
-      ..writeln(const JsonEncoder.withIndent('  ').convert(_summary()))
-      ..writeln('\nRESOURCE SNAPSHOT')
-      ..writeln(const JsonEncoder.withIndent('  ').convert(resources))
-      ..writeln('\nEVENT LOG (${_events.length} events)');
+    final text =
+        StringBuffer()
+          ..writeln('YAZEN-PLAYER DIAGNOSTIC SESSION')
+          ..writeln('Generated: ${jsonReport['generatedAt']}')
+          ..writeln('\nSUMMARY')
+          ..writeln(const JsonEncoder.withIndent('  ').convert(_summary()))
+          ..writeln('\nRESOURCE SNAPSHOT')
+          ..writeln(const JsonEncoder.withIndent('  ').convert(resources))
+          ..writeln('\nEVENT LOG (${_events.length} events)');
     for (final event in _events) {
-      text.writeln('${event['timestamp']} +${event['elapsedMs']}ms [${event['type']}] route=${event['route']} ${jsonEncode(event['data'])}');
+      text.writeln(
+        '${event['timestamp']} +${event['elapsedMs']}ms [${event['type']}] route=${event['route']} ${jsonEncode(event['data'])}',
+      );
     }
     final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
     final files = <String, String>{
@@ -322,10 +357,14 @@ class DiagnosticsService {
     };
     final saved = <String>[];
     try {
-      final nativeResult = await _native.invokeListMethod<String>('saveDiagnosticFiles', <String, String>{
-        for (final entry in files.entries) entry.key: entry.value,
-      });
-      if (nativeResult != null && nativeResult.isNotEmpty) saved.addAll(nativeResult);
+      final nativeResult = await _native.invokeListMethod<String>(
+        'saveDiagnosticFiles',
+        <String, String>{
+          for (final entry in files.entries) entry.key: entry.value,
+        },
+      );
+      if (nativeResult != null && nativeResult.isNotEmpty)
+        saved.addAll(nativeResult);
     } catch (_) {
       final directory = await getApplicationDocumentsDirectory();
       for (final entry in files.entries) {
@@ -335,19 +374,30 @@ class DiagnosticsService {
       }
     }
     record('report_export_completed', <String, Object?>{'files': saved});
-    return DiagnosticExport(paths: saved, eventCount: includedEventCount, summary: _summary());
+    return DiagnosticExport(
+      paths: saved,
+      eventCount: includedEventCount,
+      summary: _summary(),
+    );
   }
 
   static int _percentile(List<int> values, double percentile) {
     if (values.isEmpty) return 0;
     final sorted = List<int>.of(values)..sort();
-    final index = ((sorted.length - 1) * percentile).ceil().clamp(0, sorted.length - 1);
+    final index = ((sorted.length - 1) * percentile).ceil().clamp(
+      0,
+      sorted.length - 1,
+    );
     return sorted[index];
   }
 }
 
 class DiagnosticExport {
-  const DiagnosticExport({required this.paths, required this.eventCount, required this.summary});
+  const DiagnosticExport({
+    required this.paths,
+    required this.eventCount,
+    required this.summary,
+  });
   final List<String> paths;
   final int eventCount;
   final Map<String, Object?> summary;

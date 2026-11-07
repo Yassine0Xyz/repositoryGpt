@@ -151,20 +151,18 @@ class MediaLibraryService {
         return _toMediaTracks(songs);
       });
 
-  Future<List<MediaTrack>> querySongsFrom(
-    AudiosFromType type,
-    Object where,
-  ) => _measure<List<MediaTrack>>('media_query_filtered_songs', () async {
-    if (!await ensurePermission()) return const <MediaTrack>[];
-    final songs = await _audioQuery.queryAudiosFrom(
-      type,
-      where,
-      sortType: SongSortType.TITLE,
-      orderType: OrderType.ASC_OR_SMALLER,
-      ignoreCase: true,
-    );
-    return _toMediaTracks(songs);
-  });
+  Future<List<MediaTrack>> querySongsFrom(AudiosFromType type, Object where) =>
+      _measure<List<MediaTrack>>('media_query_filtered_songs', () async {
+        if (!await ensurePermission()) return const <MediaTrack>[];
+        final songs = await _audioQuery.queryAudiosFrom(
+          type,
+          where,
+          sortType: SongSortType.TITLE,
+          orderType: OrderType.ASC_OR_SMALLER,
+          ignoreCase: true,
+        );
+        return _toMediaTracks(songs);
+      });
 
   Future<List<MediaTrack>> querySongsInFolder(String folder) async {
     final songs = await querySongs();
@@ -211,62 +209,62 @@ class MediaLibraryService {
 
   Future<List<MediaTrack>> queryVideos({bool requestPermission = true}) =>
       _measure<List<MediaTrack>>('media_query_videos', () async {
-    final bool granted;
-    try {
-      granted =
-          requestPermission
-              ? await (_videoPermissionRequester?.call() ??
-                      _localMediaChannel.invokeMethod<bool>(
-                        'requestVideoPermission',
-                      )) ??
-                  false
-              : await (_videoPermissionStatusReader?.call() ??
-                      _localMediaChannel.invokeMethod<bool>(
-                        'videoPermissionStatus',
-                      )) ??
-                  false;
-    } on MissingPluginException {
-      return const <MediaTrack>[];
-    }
-    if (!granted) return const <MediaTrack>[];
+        final bool granted;
+        try {
+          granted =
+              requestPermission
+                  ? await (_videoPermissionRequester?.call() ??
+                          _localMediaChannel.invokeMethod<bool>(
+                            'requestVideoPermission',
+                          )) ??
+                      false
+                  : await (_videoPermissionStatusReader?.call() ??
+                          _localMediaChannel.invokeMethod<bool>(
+                            'videoPermissionStatus',
+                          )) ??
+                      false;
+        } on MissingPluginException {
+          return const <MediaTrack>[];
+        }
+        if (!granted) return const <MediaTrack>[];
 
-    final raw = await _localMediaChannel.invokeMethod<List<dynamic>>(
-      'queryVideos',
-    );
-    if (raw == null) return const <MediaTrack>[];
-    return raw
-        .whereType<Map<dynamic, dynamic>>()
-        .map((entry) {
-          final path = entry['path']?.toString() ?? '';
-          final uri = entry['uri']?.toString();
-          final title = entry['title']?.toString() ?? 'Local video';
-          final durationMs =
-              entry['durationMs'] is num
-                  ? (entry['durationMs'] as num).toInt()
-                  : 0;
-          final sizeBytes =
-              entry['sizeBytes'] is num
-                  ? (entry['sizeBytes'] as num).toInt()
-                  : null;
-          final dateAdded =
-              entry['dateAdded'] is num
-                  ? (entry['dateAdded'] as num).toInt()
-                  : 0;
-          return MediaTrack.fromLocalVideo(
-            path: path,
-            contentUri: uri,
-            title: title,
-            duration:
-                durationMs > 0 ? Duration(milliseconds: durationMs) : null,
-            sizeBytes: sizeBytes,
-            modifiedAt:
-                dateAdded > 0
-                    ? DateTime.fromMillisecondsSinceEpoch(dateAdded * 1000)
-                    : null,
-          );
-        })
-        .toList(growable: false);
-  });
+        final raw = await _localMediaChannel.invokeMethod<List<dynamic>>(
+          'queryVideos',
+        );
+        if (raw == null) return const <MediaTrack>[];
+        return raw
+            .whereType<Map<dynamic, dynamic>>()
+            .map((entry) {
+              final path = entry['path']?.toString() ?? '';
+              final uri = entry['uri']?.toString();
+              final title = entry['title']?.toString() ?? 'Local video';
+              final durationMs =
+                  entry['durationMs'] is num
+                      ? (entry['durationMs'] as num).toInt()
+                      : 0;
+              final sizeBytes =
+                  entry['sizeBytes'] is num
+                      ? (entry['sizeBytes'] as num).toInt()
+                      : null;
+              final dateAdded =
+                  entry['dateAdded'] is num
+                      ? (entry['dateAdded'] as num).toInt()
+                      : 0;
+              return MediaTrack.fromLocalVideo(
+                path: path,
+                contentUri: uri,
+                title: title,
+                duration:
+                    durationMs > 0 ? Duration(milliseconds: durationMs) : null,
+                sizeBytes: sizeBytes,
+                modifiedAt:
+                    dateAdded > 0
+                        ? DateTime.fromMillisecondsSinceEpoch(dateAdded * 1000)
+                        : null,
+              );
+            })
+            .toList(growable: false);
+      });
 
   Future<T> _measure<T>(String operation, Future<T> Function() work) async {
     final stopwatch = Stopwatch()..start();
@@ -274,16 +272,22 @@ class MediaLibraryService {
     try {
       final result = await work();
       final count = result is Iterable ? result.length : null;
-      DiagnosticsService.instance.record('${operation}_complete', <String, Object?>{
-        'durationMs': stopwatch.elapsedMilliseconds,
-        'itemCount': count,
-      });
+      DiagnosticsService.instance.record(
+        '${operation}_complete',
+        <String, Object?>{
+          'durationMs': stopwatch.elapsedMilliseconds,
+          'itemCount': count,
+        },
+      );
       return result;
     } catch (error) {
-      DiagnosticsService.instance.record('${operation}_failed', <String, Object?>{
-        'durationMs': stopwatch.elapsedMilliseconds,
-        'error': error.toString(),
-      });
+      DiagnosticsService.instance.record(
+        '${operation}_failed',
+        <String, Object?>{
+          'durationMs': stopwatch.elapsedMilliseconds,
+          'error': error.toString(),
+        },
+      );
       rethrow;
     }
   }

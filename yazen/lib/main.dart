@@ -111,29 +111,29 @@ class HybridMusicApp extends StatelessWidget {
                 (context, child) => NowPlayingScope(
                   child: ThemeBackdrop(
                     child: NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          final metrics = notification.metrics;
-                          if (notification is ScrollStartNotification) {
-                            ScrollPerformanceMode.noteScrollActivity();
-                            DiagnosticsService.instance.scrollStarted(
-                              axis: metrics.axis.name,
-                              pixels: metrics.pixels,
-                            );
-                          } else if (notification is ScrollUpdateNotification) {
-                            DiagnosticsService.instance.scrollUpdated(
-                              delta: notification.scrollDelta,
-                              pixels: metrics.pixels,
-                              maxExtent: metrics.maxScrollExtent,
-                            );
-                          } else if (notification is ScrollEndNotification) {
-                            ScrollPerformanceMode.noteScrollEnd();
-                            DiagnosticsService.instance.scrollEnded(
-                              pixels: metrics.pixels,
-                              maxExtent: metrics.maxScrollExtent,
-                            );
-                          }
-                          return false;
-                        },
+                      onNotification: (notification) {
+                        final metrics = notification.metrics;
+                        if (notification is ScrollStartNotification) {
+                          ScrollPerformanceMode.noteScrollActivity();
+                          DiagnosticsService.instance.scrollStarted(
+                            axis: metrics.axis.name,
+                            pixels: metrics.pixels,
+                          );
+                        } else if (notification is ScrollUpdateNotification) {
+                          DiagnosticsService.instance.scrollUpdated(
+                            delta: notification.scrollDelta,
+                            pixels: metrics.pixels,
+                            maxExtent: metrics.maxScrollExtent,
+                          );
+                        } else if (notification is ScrollEndNotification) {
+                          ScrollPerformanceMode.noteScrollEnd();
+                          DiagnosticsService.instance.scrollEnded(
+                            pixels: metrics.pixels,
+                            maxExtent: metrics.maxScrollExtent,
+                          );
+                        }
+                        return false;
+                      },
                       child: child ?? const SizedBox.shrink(),
                     ),
                   ),

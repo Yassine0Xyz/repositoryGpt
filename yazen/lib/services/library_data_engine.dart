@@ -45,13 +45,12 @@ class LibraryIndexSnapshot {
       (byFolder[identity] ??= <MediaTrack>[]).add(track);
     }
 
-    final folderList = byFolder.keys.toList(growable: false)
-      ..sort((a, b) {
-        final byLabel = folderDisplayName(
-          a,
-        ).toLowerCase().compareTo(folderDisplayName(b).toLowerCase());
-        return byLabel == 0 ? a.compareTo(b) : byLabel;
-      });
+    final folderList = byFolder.keys.toList(growable: false)..sort((a, b) {
+      final byLabel = folderDisplayName(
+        a,
+      ).toLowerCase().compareTo(folderDisplayName(b).toLowerCase());
+      return byLabel == 0 ? a.compareTo(b) : byLabel;
+    });
 
     return LibraryIndexSnapshot._(
       revision: revision,
@@ -229,14 +228,14 @@ class LibraryDataEngine {
     final playCounts =
         sort == LibrarySort.mostPlayed
             ? <String, int>{
-                for (final track in candidates) track.id: playCount(track.id),
-              }
+              for (final track in candidates) track.id: playCount(track.id),
+            }
             : const <String, int>{};
     final playedAt =
         sort == LibrarySort.recentlyPlayedFirst
             ? <String, DateTime?>{
-                for (final track in candidates) track.id: lastPlayed(track.id),
-              }
+              for (final track in candidates) track.id: lastPlayed(track.id),
+            }
             : const <String, DateTime?>{};
     candidates.sort(
       (a, b) => _compareTracks(
@@ -267,14 +266,14 @@ class LibraryDataEngine {
     final playCounts =
         sort == LibrarySort.mostPlayed
             ? <String, int>{
-                for (final track in sorted) track.id: playCount(track.id),
-              }
+              for (final track in sorted) track.id: playCount(track.id),
+            }
             : const <String, int>{};
     final playedAt =
         sort == LibrarySort.recentlyPlayedFirst
             ? <String, DateTime?>{
-                for (final track in sorted) track.id: lastPlayed(track.id),
-              }
+              for (final track in sorted) track.id: lastPlayed(track.id),
+            }
             : const <String, DateTime?>{};
     sorted.sort(
       (a, b) => _compareTracks(

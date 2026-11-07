@@ -14,20 +14,19 @@ void main() {
     expect(ScrollPerformanceMode.isScrolling.value, isFalse);
   });
 
-  testWidgets(
-    'a new scroll cancels a pending background resume',
-    (tester) async {
-      ScrollPerformanceMode.noteScrollActivity();
-      ScrollPerformanceMode.noteScrollEnd();
-      await tester.pump(const Duration(milliseconds: 100));
+  testWidgets('a new scroll cancels a pending background resume', (
+    tester,
+  ) async {
+    ScrollPerformanceMode.noteScrollActivity();
+    ScrollPerformanceMode.noteScrollEnd();
+    await tester.pump(const Duration(milliseconds: 100));
 
-      ScrollPerformanceMode.noteScrollActivity();
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(ScrollPerformanceMode.isScrolling.value, isTrue);
+    ScrollPerformanceMode.noteScrollActivity();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(ScrollPerformanceMode.isScrolling.value, isTrue);
 
-      ScrollPerformanceMode.noteScrollEnd();
-      await tester.pump(const Duration(milliseconds: 140));
-      expect(ScrollPerformanceMode.isScrolling.value, isFalse);
-    },
-  );
+    ScrollPerformanceMode.noteScrollEnd();
+    await tester.pump(const Duration(milliseconds: 140));
+    expect(ScrollPerformanceMode.isScrolling.value, isFalse);
+  });
 }

@@ -275,13 +275,19 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
       final disk = await ArtworkDiskCache.instance.read(key);
       if (disk != null && disk.bytes.isNotEmpty) {
         _diskCacheHits++;
-        DiagnosticsService.instance.record('artwork_disk_cache_hit', <String, Object?>{'pixels': pixels, ..._diagnosticsSnapshot()});
+        DiagnosticsService.instance.record(
+          'artwork_disk_cache_hit',
+          <String, Object?>{'pixels': pixels, ..._diagnosticsSnapshot()},
+        );
         final artwork = _CachedArtwork(disk.bytes, disk.width, disk.height);
         _writeCache(key, artwork);
         return artwork;
       }
       _diskCacheMisses++;
-      DiagnosticsService.instance.record('artwork_disk_cache_miss', <String, Object?>{'pixels': pixels, ..._diagnosticsSnapshot()});
+      DiagnosticsService.instance.record(
+        'artwork_disk_cache_miss',
+        <String, Object?>{'pixels': pixels, ..._diagnosticsSnapshot()},
+      );
       return await _loadArtwork(
         track,
         imageUri,
@@ -341,7 +347,10 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     final loadClock = Stopwatch()..start();
     DiagnosticsService.instance.record('artwork_load_start', <String, Object?>{
       'pixels': pixels,
-      'source': track?.isLocal == true ? 'local' : (imageUri == null ? 'unknown' : 'remote'),
+      'source':
+          track?.isLocal == true
+              ? 'local'
+              : (imageUri == null ? 'unknown' : 'remote'),
       'trackId': track?.id,
       ..._diagnosticsSnapshot(),
     });
@@ -354,19 +363,21 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         cropContentBounds,
       );
       _artworkLoadsCompleted++;
-      DiagnosticsService.instance.record('artwork_load_complete', <String, Object?>{
-        'durationMs': loadClock.elapsedMilliseconds,
-        'success': result != null,
-        ..._diagnosticsSnapshot(),
-      });
+      DiagnosticsService.instance
+          .record('artwork_load_complete', <String, Object?>{
+            'durationMs': loadClock.elapsedMilliseconds,
+            'success': result != null,
+            ..._diagnosticsSnapshot(),
+          });
       return result;
     } catch (error) {
       _artworkLoadsFailed++;
-      DiagnosticsService.instance.record('artwork_load_failed', <String, Object?>{
-        'durationMs': loadClock.elapsedMilliseconds,
-        'error': error.toString(),
-        ..._diagnosticsSnapshot(),
-      });
+      DiagnosticsService.instance
+          .record('artwork_load_failed', <String, Object?>{
+            'durationMs': loadClock.elapsedMilliseconds,
+            'error': error.toString(),
+            ..._diagnosticsSnapshot(),
+          });
       rethrow;
     } finally {
       if ((kDebugMode || kProfileMode) &&
