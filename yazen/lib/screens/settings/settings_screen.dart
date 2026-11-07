@@ -141,11 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         selected: <LibraryLayoutMode>{
                           displaySettings.layoutMode,
                         },
-                        onSelectionChanged:
-                            _preferencesLoaded
-                                ? (selected) =>
-                                    _setLibraryLayout(selected.first)
-                                : null,
+                        onSelectionChanged: _preferencesLoaded
+                            ? (selected) => _setLibraryLayout(selected.first)
+                            : null,
                       ),
                     ),
                     Divider(color: tokens.divider, height: 1),
@@ -175,12 +173,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Text('Compact'),
                           ),
                         ],
-                        onChanged:
-                            _preferencesLoaded
-                                ? (value) {
-                                  if (value != null) _setLibraryDensity(value);
-                                }
-                                : null,
+                        onChanged: _preferencesLoaded
+                            ? (value) {
+                                if (value != null) _setLibraryDensity(value);
+                              }
+                            : null,
                       ),
                     ),
                   ],
@@ -197,10 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _PreferenceSwitch(
                   icon: Icons.equalizer_rounded,
                   title: 'Equalizer',
-                  subtitle:
-                      controller.audioHandler.equalizerAvailable
-                          ? 'Use the active Android audio effect profile'
-                          : 'Unavailable on this device; playback remains stable',
+                  subtitle: controller.audioHandler.equalizerAvailable
+                      ? 'Use the active Android audio effect profile'
+                      : 'Unavailable on this device; playback remains stable',
                   value: _equalizerEnabled,
                   enabled:
                       _preferencesLoaded &&
@@ -237,12 +233,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       DropdownMenuItem(value: 1.5, child: Text('1.50×')),
                       DropdownMenuItem(value: 2.0, child: Text('2.00×')),
                     ],
-                    onChanged:
-                        _preferencesLoaded
-                            ? (value) {
-                              if (value != null) _setSpeed(controller, value);
-                            }
-                            : null,
+                    onChanged: _preferencesLoaded
+                        ? (value) {
+                            if (value != null) _setSpeed(controller, value);
+                          }
+                        : null,
                   ),
                 ),
                 Divider(color: tokens.divider, height: 1),
@@ -256,11 +251,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: StreamBuilder<Duration?>(
                     stream: controller.audioHandler.sleepTimerRemainingStream,
                     initialData: controller.audioHandler.sleepTimerRemaining,
-                    builder:
-                        (context, snapshot) => Text(
-                          _sleepTimerLabel(controller, snapshot.data),
-                          style: TextStyle(color: tokens.textSecondary),
-                        ),
+                    builder: (context, snapshot) => Text(
+                      _sleepTimerLabel(controller, snapshot.data),
+                      style: TextStyle(color: tokens.textSecondary),
+                    ),
                   ),
                   trailing: TextButton(
                     onPressed: () => _chooseSleepTimer(controller),
@@ -310,10 +304,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       max: 1.8,
                       divisions: 12,
                       label: '${(settings.sensitivity * 100).round()}%',
-                      onChanged:
-                          settings.loaded
-                              ? (value) => settings.setSensitivity(value)
-                              : null,
+                      onChanged: settings.loaded
+                          ? (value) => settings.setSensitivity(value)
+                          : null,
                     ),
                     Divider(color: tokens.divider, height: 1),
                     ListTile(
@@ -343,14 +336,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Text('Fast'),
                           ),
                         ],
-                        onChanged:
-                            settings.loaded
-                                ? (value) {
-                                  if (value != null) {
-                                    settings.setResponse(value);
-                                  }
+                        onChanged: settings.loaded
+                            ? (value) {
+                                if (value != null) {
+                                  settings.setResponse(value);
                                 }
-                                : null,
+                              }
+                            : null,
                       ),
                     ),
                     Divider(color: tokens.divider, height: 1),
@@ -375,10 +367,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       max: 0.08,
                       divisions: 16,
                       label: settings.noiseGate.toStringAsFixed(3),
-                      onChanged:
-                          settings.loaded
-                              ? (value) => settings.setNoiseGate(value)
-                              : null,
+                      onChanged: settings.loaded
+                          ? (value) => settings.setNoiseGate(value)
+                          : null,
                     ),
                     Divider(color: tokens.divider, height: 1),
                     _PreferenceSwitch(
@@ -402,18 +393,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: <Widget>[
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.monitor_heart_outlined, color: tokens.accent),
-                  title: const Text('Performance monitor', style: TextStyle(fontWeight: FontWeight.w800)),
-                  subtitle: Text('Full session journal, profiling and causal investigation', style: TextStyle(color: tokens.textSecondary)),
+                  leading: Icon(
+                    Icons.monitor_heart_outlined,
+                    color: tokens.accent,
+                  ),
+                  title: const Text(
+                    'Performance monitor',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  subtitle: Text(
+                    'Full session journal, profiling and causal investigation',
+                    style: TextStyle(color: tokens.textSecondary),
+                  ),
                   trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DiagnosticsScreen())),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const DiagnosticsScreen(),
+                    ),
+                  ),
                 ),
                 Divider(color: tokens.divider, height: 1),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.file_download_outlined, color: tokens.accent),
-                  title: const Text('Export complete session', style: TextStyle(fontWeight: FontWeight.w800)),
-                  subtitle: Text('Raw JSONL journal, analysis JSON and Markdown report', style: TextStyle(color: tokens.textSecondary)),
+                  leading: Icon(
+                    Icons.file_download_outlined,
+                    color: tokens.accent,
+                  ),
+                  title: const Text(
+                    'Export complete session',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  subtitle: Text(
+                    'Raw JSONL journal, analysis JSON and Markdown report',
+                    style: TextStyle(color: tokens.textSecondary),
+                  ),
                   onTap: _exportDiagnosticLogs,
                 ),
               ],
@@ -450,13 +463,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Diagnostic logs exported'),
-          content: SelectableText('${result.eventCount} events saved:\n\n${result.paths.join('\n\n')}'),
-          actions: <Widget>[TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+          content: SelectableText(
+            '${result.eventCount} events saved:\n\n${result.paths.join('\n\n')}',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
         ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to export logs: $error')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to export logs: $error')));
     }
   }
 
@@ -554,31 +576,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _chooseSleepTimer(HybridMusicController controller) async {
     final choice = await showModalBottomSheet<Object?>(
       context: context,
-      builder:
-          (context) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ListTile(
-                  title: const Text('Off'),
-                  onTap: () => Navigator.pop(context, 0),
-                ),
-                ListTile(
-                  title: const Text('End of current track'),
-                  onTap:
-                      () => Navigator.pop(
-                        context,
-                        SleepTimerMode.endOfCurrentTrack,
-                      ),
-                ),
-                for (final value in <int>[15, 30, 60, 90])
-                  ListTile(
-                    title: Text('$value minutes'),
-                    onTap: () => Navigator.pop(context, value),
-                  ),
-              ],
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              title: const Text('Off'),
+              onTap: () => Navigator.pop(context, 0),
             ),
-          ),
+            ListTile(
+              title: const Text('End of current track'),
+              onTap: () =>
+                  Navigator.pop(context, SleepTimerMode.endOfCurrentTrack),
+            ),
+            for (final value in <int>[15, 30, 60, 90])
+              ListTile(
+                title: Text('$value minutes'),
+                onTap: () => Navigator.pop(context, value),
+              ),
+          ],
+        ),
+      ),
     );
     if (choice == null) return;
     if (choice is SleepTimerMode) {
@@ -675,8 +693,8 @@ class _ThemeOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = ThemeTokens.fromPreset(preset);
     return InkWell(
-      onTap:
-          () => RadioGroup.maybeOf<EchoThemePreset>(context)?.onChanged(preset),
+      onTap: () =>
+          RadioGroup.maybeOf<EchoThemePreset>(context)?.onChanged(preset),
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),

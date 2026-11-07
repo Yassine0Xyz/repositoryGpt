@@ -27,12 +27,11 @@ class LocalEntityTracksScreen extends StatefulWidget {
     String? subtitle,
   }) {
     return MaterialPageRoute<void>(
-      builder:
-          (_) => LocalEntityTracksScreen(
-            title: title,
-            loadTracks: loadTracks,
-            subtitle: subtitle,
-          ),
+      builder: (_) => LocalEntityTracksScreen(
+        title: title,
+        loadTracks: loadTracks,
+        subtitle: subtitle,
+      ),
     );
   }
 
@@ -131,17 +130,17 @@ class _LocalEntityTracksScreenState extends State<LocalEntityTracksScreen> {
                               key: ValueKey<String>('entity-${track.id}'),
                               track: track,
                               compact: compact,
-                              onTap:
-                                  () => unawaited(
-                                    controller.playTrackQueue(
-                                      tracks,
-                                      initialIndex: trackIndex,
-                                    ),
-                                  ),
+                              onTap: () => unawaited(
+                                controller.playTrackQueue(
+                                  tracks,
+                                  initialIndex: trackIndex,
+                                ),
+                              ),
                               isFavorite: controller.isFavorite(track),
-                              onFavorite: () => controller.toggleFavorite(track),
-                              onAddToPlaylist:
-                                  () => showAddToPlaylistSheet(context, track),
+                              onFavorite: () =>
+                                  controller.toggleFavorite(track),
+                              onAddToPlaylist: () =>
+                                  showAddToPlaylistSheet(context, track),
                             ),
                           );
                         },

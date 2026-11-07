@@ -103,10 +103,8 @@ void main() {
       expect(delayedStop.isCompleted, isFalse);
 
       delayedStop.complete();
-      await Future.wait(<Future<void>>[
-        first,
-        ...taps,
-      ]).timeout(const Duration(seconds: 2));
+      await Future.wait(<Future<void>>[first, ...taps])
+          .timeout(const Duration(seconds: 2));
 
       expect(handler.activeTrack?.id, libraryTracks[99].id);
       expect(handler.queueTracks, hasLength(libraryTracks.length));
@@ -126,48 +124,43 @@ void main() {
     },
   );
 
-  test(
-    'rapid taps on the same large queue seek in place and keep only newest history',
-    () async {
-      final player = _FakeAudioPlayer();
-      final handler = HybridAudioHandler(
-        player: player,
-        playbackStore: const PlaybackStateStore(),
-      );
-      final libraryTracks = List<MediaTrack>.generate(500, _track);
-      await handler.playTrackQueue(libraryTracks, initialIndex: 0);
-      expect(player.sourceSetCount, 1);
+  test('rapid taps on the same large queue seek in place and keep only newest history', () async {
+    final player = _FakeAudioPlayer();
+    final handler = HybridAudioHandler(
+      player: player,
+      playbackStore: const PlaybackStateStore(),
+    );
+    final libraryTracks = List<MediaTrack>.generate(500, _track);
+    await handler.playTrackQueue(libraryTracks, initialIndex: 0);
+    expect(player.sourceSetCount, 1);
 
-      final manager = LocalPlaylistManager();
-      await manager.initialize();
-      final controller = HybridMusicController(
-        library: _FakeMediaLibrary(songs: libraryTracks),
-        audioHandler: handler,
-        playlistManager: manager,
-      );
-      final taps = <Future<void>>[];
-      for (var index = 0; index < 100; index++) {
-        taps.add(controller.playTrackQueue(libraryTracks, initialIndex: index));
-      }
-      await Future.wait(taps).timeout(const Duration(seconds: 2));
+    final manager = LocalPlaylistManager();
+    await manager.initialize();
+    final controller = HybridMusicController(
+      library: _FakeMediaLibrary(songs: libraryTracks),
+      audioHandler: handler,
+      playlistManager: manager,
+    );
+    final taps = <Future<void>>[];
+    for (var index = 0; index < 100; index++) {
+      taps.add(controller.playTrackQueue(libraryTracks, initialIndex: index));
+    }
+    await Future.wait(taps).timeout(const Duration(seconds: 2));
 
-      expect(player.sourceSetCount, 1);
-      expect(player.stopCount, 0);
-      expect(player.currentIndex, 99);
-      expect(handler.activeTrack?.id, libraryTracks[99].id);
-      expect(manager.playCount(libraryTracks[99].id), 1);
-      expect(
-        libraryTracks
-            .take(99)
-            .every((track) => manager.playCount(track.id) == 0),
-        isTrue,
-      );
+    expect(player.sourceSetCount, 1);
+    expect(player.stopCount, 0);
+    expect(player.currentIndex, 99);
+    expect(handler.activeTrack?.id, libraryTracks[99].id);
+    expect(manager.playCount(libraryTracks[99].id), 1);
+    expect(
+      libraryTracks.take(99).every((track) => manager.playCount(track.id) == 0),
+      isTrue,
+    );
 
-      await handler.dispose();
-      controller.dispose();
-      await player.close();
-    },
-  );
+    await handler.dispose();
+    controller.dispose();
+    await player.close();
+  });
 
   test('Repeat All manual Next wraps from the final queue item', () async {
     final player = _FakeAudioPlayer();
@@ -294,39 +287,42 @@ void main() {
     await player.close();
   });
 
-  test('library refresh keeps the current list visible until replacement is ready', () async {
-    final songs = <MediaTrack>[_folderTrack(1, '/Music/Old')];
-    final library = _FakeMediaLibrary(songs: songs);
-    final player = _FakeAudioPlayer();
-    final handler = HybridAudioHandler(
-      player: player,
-      playbackStore: const PlaybackStateStore(),
-    );
-    final manager = LocalPlaylistManager();
-    await manager.initialize();
-    final controller = HybridMusicController(
-      library: library,
-      audioHandler: handler,
-      playlistManager: manager,
-    );
+  test(
+    'library refresh keeps the current list visible until replacement is ready',
+    () async {
+      final songs = <MediaTrack>[_folderTrack(1, '/Music/Old')];
+      final library = _FakeMediaLibrary(songs: songs);
+      final player = _FakeAudioPlayer();
+      final handler = HybridAudioHandler(
+        player: player,
+        playbackStore: const PlaybackStateStore(),
+      );
+      final manager = LocalPlaylistManager();
+      await manager.initialize();
+      final controller = HybridMusicController(
+        library: library,
+        audioHandler: handler,
+        playlistManager: manager,
+      );
 
-    await controller.loadLibrary();
-    final replacement = Completer<List<MediaTrack>>();
-    library.songQueryCompleter = replacement;
-    final refresh = controller.refreshLibrary();
-    await Future<void>.delayed(Duration.zero);
+      await controller.loadLibrary();
+      final replacement = Completer<List<MediaTrack>>();
+      library.songQueryCompleter = replacement;
+      final refresh = controller.refreshLibrary();
+      await Future<void>.delayed(Duration.zero);
 
-    expect(controller.isLoading, isFalse);
-    expect(controller.localSongs.single.id, 'queue-1');
+      expect(controller.isLoading, isFalse);
+      expect(controller.localSongs.single.id, 'queue-1');
 
-    replacement.complete(<MediaTrack>[_folderTrack(2, '/Music/New')]);
-    await refresh;
-    expect(controller.localSongs.single.id, 'queue-2');
+      replacement.complete(<MediaTrack>[_folderTrack(2, '/Music/New')]);
+      await refresh;
+      expect(controller.localSongs.single.id, 'queue-2');
 
-    controller.dispose();
-    await handler.dispose();
-    await player.close();
-  });
+      controller.dispose();
+      await handler.dispose();
+      await player.close();
+    },
+  );
 
   test('folder queries use the refreshed library snapshot', () async {
     final songs = <MediaTrack>[_folderTrack(1, '/Music/Old')];

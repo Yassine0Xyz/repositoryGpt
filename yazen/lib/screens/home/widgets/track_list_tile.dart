@@ -62,16 +62,14 @@ class TrackListTile extends StatelessWidget {
       // Material paints the row surface and ink feedback together. This
       // replaces the previous decorated Container + transparent Material pair.
       child: Material(
-        color:
-            isCurrentTrack
-                ? tokens.accent.withValues(alpha: 0.045)
-                : Colors.transparent,
+        color: isCurrentTrack
+            ? tokens.accent.withValues(alpha: 0.045)
+            : Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: rowRadius,
-          side:
-              isCurrentTrack
-                  ? BorderSide(color: tokens.accent.withValues(alpha: 0.12))
-                  : BorderSide.none,
+          side: isCurrentTrack
+              ? BorderSide(color: tokens.accent.withValues(alpha: 0.12))
+              : BorderSide.none,
         ),
         child: InkWell(
           borderRadius: rowRadius,
@@ -97,7 +95,9 @@ class TrackListTile extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: tokens.surface.withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(ThemeRadii.small),
+                            borderRadius: BorderRadius.circular(
+                              ThemeRadii.small,
+                            ),
                             border: Border.all(
                               color: tokens.accent.withValues(alpha: 0.5),
                             ),

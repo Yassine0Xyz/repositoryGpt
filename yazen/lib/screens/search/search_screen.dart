@@ -184,11 +184,7 @@ class _SearchScreenState extends State<SearchScreen> {
       matchingTracks.where((track) => !track.isVideo),
     );
 
-    _addGroup(
-      entries,
-      'Songs',
-      _cachedAudioResults.map(_SearchEntry.track),
-    );
+    _addGroup(entries, 'Songs', _cachedAudioResults.map(_SearchEntry.track));
     _addGroup(
       entries,
       'Artists',
@@ -244,16 +240,15 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _matchesNormalized(String normalizedQuery, String value) =>
       _normalize(value).contains(normalizedQuery);
 
-  String _normalize(String value) =>
-      value
-          .toLowerCase()
-          .replaceAll(_arabicDiacritics, '')
-          .replaceAll('أ', 'ا')
-          .replaceAll('إ', 'ا')
-          .replaceAll('آ', 'ا')
-          .replaceAll('ى', 'ي')
-          .replaceAll('ة', 'ه')
-          .trim();
+  String _normalize(String value) => value
+      .toLowerCase()
+      .replaceAll(_arabicDiacritics, '')
+      .replaceAll('أ', 'ا')
+      .replaceAll('إ', 'ا')
+      .replaceAll('آ', 'ا')
+      .replaceAll('ى', 'ي')
+      .replaceAll('ة', 'ه')
+      .trim();
 
   Future<void> _openEntry(
     BuildContext context,
@@ -282,8 +277,9 @@ class _SearchScreenState extends State<SearchScreen> {
     if (artist != null) {
       await navigator.push(
         LocalEntityTracksScreen.route(
-          title:
-              artist.artist.trim().isEmpty ? 'Unknown artist' : artist.artist,
+          title: artist.artist.trim().isEmpty
+              ? 'Unknown artist'
+              : artist.artist,
           subtitle: 'Tracks by this artist will appear here.',
           loadTracks: () => controller.tracksForArtist(artist.id),
         ),
@@ -312,8 +308,8 @@ class _SearchScreenState extends State<SearchScreen> {
         LocalEntityTracksScreen.route(
           title: devicePlaylist.playlist,
           subtitle: 'Tracks from this playlist will appear here.',
-          loadTracks:
-              () => controller.tracksForDevicePlaylist(devicePlaylist.id),
+          loadTracks: () =>
+              controller.tracksForDevicePlaylist(devicePlaylist.id),
         ),
       );
     }
@@ -375,18 +371,17 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: InputDecoration(
                   hintText: 'Songs, artists, albums, playlists',
                   prefixIcon: Icon(Icons.search_rounded, color: tokens.accent),
-                  suffixIcon:
-                      _query.isEmpty
-                          ? null
-                          : IconButton(
-                            tooltip: 'Clear search',
-                            onPressed: () {
-                              _textController.clear();
-                              _onQueryChanged('');
-                              _focusNode.requestFocus();
-                            },
-                            icon: const Icon(Icons.close_rounded),
-                          ),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Clear search',
+                          onPressed: () {
+                            _textController.clear();
+                            _onQueryChanged('');
+                            _focusNode.requestFocus();
+                          },
+                          icon: const Icon(Icons.close_rounded),
+                        ),
                   filled: true,
                   fillColor: tokens.surface,
                   contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -406,10 +401,9 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             Expanded(
-              child:
-                  isSearching
-                      ? _buildResults(controller, entries, audioResults, tokens)
-                      : _buildRecentSearches(tokens),
+              child: isSearching
+                  ? _buildResults(controller, entries, audioResults, tokens)
+                  : _buildRecentSearches(tokens),
             ),
           ],
         ),
@@ -456,20 +450,19 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         }
         final track = entry.track;
-        final leading =
-            track == null
-                ? CircleAvatar(
-                  backgroundColor: tokens.surface,
-                  foregroundColor: tokens.accent,
-                  child: Icon(entry.icon),
-                )
-                : track.isVideo
-                ? CircleAvatar(
-                  backgroundColor: tokens.surface,
-                  foregroundColor: tokens.accent,
-                  child: const Icon(Icons.ondemand_video_rounded),
-                )
-                : YazenMediaArtwork(track: track, size: 48);
+        final leading = track == null
+            ? CircleAvatar(
+                backgroundColor: tokens.surface,
+                foregroundColor: tokens.accent,
+                child: Icon(entry.icon),
+              )
+            : track.isVideo
+            ? CircleAvatar(
+                backgroundColor: tokens.surface,
+                foregroundColor: tokens.accent,
+                child: const Icon(Icons.ondemand_video_rounded),
+              )
+            : YazenMediaArtwork(track: track, size: 48);
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 4),
           leading: leading,

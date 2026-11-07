@@ -24,11 +24,7 @@ void main() {
   group('LibraryIndexSnapshot', () {
     test('publishes immutable identity and folder indexes', () {
       final engine = LibraryDataEngine();
-      final first = _track(
-        id: 'first',
-        title: 'First',
-        folder: r'\Music\Live',
-      );
+      final first = _track(id: 'first', title: 'First', folder: r'\Music\Live');
       final hidden = _track(
         id: 'hidden',
         title: 'Hidden',

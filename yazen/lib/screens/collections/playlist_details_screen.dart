@@ -114,8 +114,8 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
             PopupMenuButton<_PlaylistMenuAction>(
               tooltip: 'Playlist options',
               onSelected: (action) => _handleMenuAction(action, playlist),
-              itemBuilder:
-                  (context) => const <PopupMenuEntry<_PlaylistMenuAction>>[
+              itemBuilder: (context) =>
+                  const <PopupMenuEntry<_PlaylistMenuAction>>[
                     PopupMenuItem(
                       value: _PlaylistMenuAction.addSong,
                       child: ListTile(
@@ -158,19 +158,18 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
         children: <Widget>[
           playlist.tracks.isEmpty
               ? const _PlaylistEmptyCollection(
-                icon: Icons.queue_music_rounded,
-                title: 'Playlist is empty',
-                subtitle: 'Add tracks from the local library.',
-              )
+                  icon: Icons.queue_music_rounded,
+                  title: 'Playlist is empty',
+                  subtitle: 'Add tracks from the local library.',
+                )
               : LayoutBuilder(
-                builder: (context, constraints) {
-                  final compact = constraints.maxWidth - 24 < 470;
-                  return ReorderableListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 118),
-                    itemCount: tracks.length + 1,
-                    onReorderItem:
-                        canReorder
-                            ? (oldIndex, newIndex) async {
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth - 24 < 470;
+                    return ReorderableListView.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 118),
+                      itemCount: tracks.length + 1,
+                      onReorderItem: canReorder
+                          ? (oldIndex, newIndex) async {
                               if (oldIndex == 0 || newIndex == 0) return;
                               final oldTrackIndex = oldIndex - 1;
                               await manager.moveWithinPlaylist(
@@ -179,61 +178,57 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                                 newIndex - 1,
                               );
                             }
-                            : (_, _) {},
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return Padding(
-                          key: const ValueKey('playlist-header'),
-                          padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: Text(
-                                  '${playlist.tracks.length} songs',
-                                  style: TextStyle(
-                                    color: tokens.textSecondary,
-                                    fontWeight: FontWeight.w700,
+                          : (_, _) {},
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return Padding(
+                            key: const ValueKey('playlist-header'),
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    '${playlist.tracks.length} songs',
+                                    style: TextStyle(
+                                      color: tokens.textSecondary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              if (_manageMode)
-                                Text(
-                                  '${_selectedIds.length} selected',
-                                  style: TextStyle(color: tokens.accent),
-                                )
-                              else
-                                FilledButton.tonalIcon(
-                                  onPressed:
-                                      () => controller.playTrackQueue(
-                                        playlist.tracks,
-                                      ),
-                                  icon: const Icon(Icons.play_arrow_rounded),
-                                  label: const Text('Play all'),
-                                ),
-                            ],
-                          ),
-                        );
-                      }
-                      final track = tracks[index - 1];
-                      final selected = _selectedIds.contains(track.id);
-                      return Dismissible(
-                        key: ValueKey('${playlist.id}-${track.id}'),
-                        direction:
-                            _manageMode
-                                ? DismissDirection.none
-                                : DismissDirection.endToStart,
-                        background: const _DeleteBackground(),
-                        onDismissed:
-                            (_) =>
-                                manager.removeFromPlaylist(playlist.id, track.id),
-                        child: TrackListTile(
-                          key: ValueKey('track-${playlist.id}-${track.id}'),
-                          track: track,
-                          compact: compact,
-                          selected: selected,
-                          trailing:
-                              _manageMode
-                                  ? Row(
+                                if (_manageMode)
+                                  Text(
+                                    '${_selectedIds.length} selected',
+                                    style: TextStyle(color: tokens.accent),
+                                  )
+                                else
+                                  FilledButton.tonalIcon(
+                                    onPressed: () => controller.playTrackQueue(
+                                      playlist.tracks,
+                                    ),
+                                    icon: const Icon(Icons.play_arrow_rounded),
+                                    label: const Text('Play all'),
+                                  ),
+                              ],
+                            ),
+                          );
+                        }
+                        final track = tracks[index - 1];
+                        final selected = _selectedIds.contains(track.id);
+                        return Dismissible(
+                          key: ValueKey('${playlist.id}-${track.id}'),
+                          direction: _manageMode
+                              ? DismissDirection.none
+                              : DismissDirection.endToStart,
+                          background: const _DeleteBackground(),
+                          onDismissed: (_) =>
+                              manager.removeFromPlaylist(playlist.id, track.id),
+                          child: TrackListTile(
+                            key: ValueKey('track-${playlist.id}-${track.id}'),
+                            track: track,
+                            compact: compact,
+                            selected: selected,
+                            trailing: _manageMode
+                                ? Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
                                       IconButton(
@@ -253,27 +248,28 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                                       ),
                                     ],
                                   )
-                                  : null,
-                          onLongPress: () => _toggleSelection(track),
-                          onTap: () {
-                            if (_manageMode) {
-                              _toggleSelection(track);
-                            } else {
-                              controller.playTrackQueue(
-                                playlist.tracks,
-                                initialIndex: playlist.tracks.indexOf(track),
-                              );
-                            }
-                          },
-                          isFavorite: controller.isFavorite(track),
-                          onFavorite: () => controller.toggleFavorite(track),
-                          onAddToPlaylist: () => _showTrackActions(context, track),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                                : null,
+                            onLongPress: () => _toggleSelection(track),
+                            onTap: () {
+                              if (_manageMode) {
+                                _toggleSelection(track);
+                              } else {
+                                controller.playTrackQueue(
+                                  playlist.tracks,
+                                  initialIndex: playlist.tracks.indexOf(track),
+                                );
+                              }
+                            },
+                            isFavorite: controller.isFavorite(track),
+                            onFavorite: () => controller.toggleFavorite(track),
+                            onAddToPlaylist: () =>
+                                _showTrackActions(context, track),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
           const Positioned(
             left: 12,
             right: 12,
@@ -282,41 +278,38 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
           ),
         ],
       ),
-      bottomNavigationBar:
-          _manageMode
-              ? SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed:
-                              _selectedIds.isEmpty
-                                  ? null
-                                  : () => _removeSelected(context, playlist),
-                          icon: const Icon(Icons.delete_outline_rounded),
-                          label: Text(
-                            _selectedIds.isEmpty
-                                ? 'Select songs to remove'
-                                : 'Remove ${_selectedIds.length} songs',
-                          ),
+      bottomNavigationBar: _manageMode
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: _selectedIds.isEmpty
+                            ? null
+                            : () => _removeSelected(context, playlist),
+                        icon: const Icon(Icons.delete_outline_rounded),
+                        label: Text(
+                          _selectedIds.isEmpty
+                              ? 'Select songs to remove'
+                              : 'Remove ${_selectedIds.length} songs',
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        tooltip: 'Hide selected',
-                        onPressed:
-                            _selectedIds.isEmpty
-                                ? null
-                                : () => _hideSelected(context, playlist),
-                        icon: const Icon(Icons.visibility_off_rounded),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      tooltip: 'Hide selected',
+                      onPressed: _selectedIds.isEmpty
+                          ? null
+                          : () => _hideSelected(context, playlist),
+                      icon: const Icon(Icons.visibility_off_rounded),
+                    ),
+                  ],
                 ),
-              )
-              : null,
+              ),
+            )
+          : null,
     );
   }
 
@@ -342,34 +335,33 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.5,
       ),
-      builder:
-          (context) => SafeArea(
-            child: ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              children: <Widget>[
-                const Text(
-                  'Songs sort',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 8),
-                RadioGroup<_PlaylistSort>(
-                  groupValue: _sort,
-                  onChanged: (value) => Navigator.pop(context, value),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      for (final option in _PlaylistSort.values)
-                        RadioListTile<_PlaylistSort>(
-                          value: option,
-                          title: Text(option.label),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          children: <Widget>[
+            const Text(
+              'Songs sort',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
-          ),
+            const SizedBox(height: 8),
+            RadioGroup<_PlaylistSort>(
+              groupValue: _sort,
+              onChanged: (value) => Navigator.pop(context, value),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  for (final option in _PlaylistSort.values)
+                    RadioListTile<_PlaylistSort>(
+                      value: option,
+                      title: Text(option.label),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
     if (selected != null && mounted) setState(() => _sort = selected);
   }
@@ -428,98 +420,88 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder:
-          (sheetContext) => StatefulBuilder(
-            builder: (context, setSheetState) {
-              final available = controller.localSongs
-                  .where(
-                    (track) =>
-                        !playlist.tracks.any((item) => item.id == track.id),
-                  )
-                  .toList(growable: false);
-              return SafeArea(
-                child: SizedBox(
-                  height: MediaQuery.sizeOf(context).height * 0.72,
-                  child: Column(
-                    children: <Widget>[
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Add song',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final available = controller.localSongs
+              .where(
+                (track) => !playlist.tracks.any((item) => item.id == track.id),
+              )
+              .toList(growable: false);
+          return SafeArea(
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.72,
+              child: Column(
+                children: <Widget>[
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Add song',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
-                      Expanded(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final compact = constraints.maxWidth < 470;
-                            return ListView.builder(
-                              itemExtent: compact ? 72 : 78,
-                              itemCount: available.length,
-                              itemBuilder: (context, index) {
-                                final track = available[index];
-                                final isSelected = selected.contains(track.id);
-                                return TrackListTile(
-                                  key: ValueKey<String>(
-                                    'playlist-add-${track.id}',
-                                  ),
-                                  track: track,
-                                  compact: compact,
-                                  selected: isSelected,
-                                  onTap:
-                                      () => setSheetState(() {
-                                        if (!selected.add(track.id)) {
-                                          selected.remove(track.id);
-                                        }
-                                      }),
-                                  onLongPress:
-                                      () => setSheetState(() {
-                                        if (!selected.add(track.id)) {
-                                          selected.remove(track.id);
-                                        }
-                                      }),
-                                );
-                              },
+                    ),
+                  ),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact = constraints.maxWidth < 470;
+                        return ListView.builder(
+                          itemExtent: compact ? 72 : 78,
+                          itemCount: available.length,
+                          itemBuilder: (context, index) {
+                            final track = available[index];
+                            final isSelected = selected.contains(track.id);
+                            return TrackListTile(
+                              key: ValueKey<String>('playlist-add-${track.id}'),
+                              track: track,
+                              compact: compact,
+                              selected: isSelected,
+                              onTap: () => setSheetState(() {
+                                if (!selected.add(track.id)) {
+                                  selected.remove(track.id);
+                                }
+                              }),
+                              onLongPress: () => setSheetState(() {
+                                if (!selected.add(track.id)) {
+                                  selected.remove(track.id);
+                                }
+                              }),
                             );
                           },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                        child: FilledButton(
-                          onPressed:
-                              selected.isEmpty
-                                  ? null
-                                  : () async {
-                                    final tracks = available
-                                        .where(
-                                          (track) =>
-                                              selected.contains(track.id),
-                                        )
-                                        .toList(growable: false);
-                                    await manager.addTracksToPlaylist(
-                                      playlist.id,
-                                      tracks,
-                                    );
-                                    if (sheetContext.mounted) {
-                                      Navigator.pop(sheetContext);
-                                    }
-                                  },
-                          child: Text('Confirm (${selected.length})'),
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: FilledButton(
+                      onPressed: selected.isEmpty
+                          ? null
+                          : () async {
+                              final tracks = available
+                                  .where((track) => selected.contains(track.id))
+                                  .toList(growable: false);
+                              await manager.addTracksToPlaylist(
+                                playlist.id,
+                                tracks,
+                              );
+                              if (sheetContext.mounted) {
+                                Navigator.pop(sheetContext);
+                              }
+                            },
+                      child: Text('Confirm (${selected.length})'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -565,21 +547,20 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder:
-          (context) => SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.playlist_add_rounded),
-                  title: const Text('Add to playlist'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await showAddToPlaylistSheet(this.context, track);
-                  },
-                ),
-              ],
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.playlist_add_rounded),
+              title: const Text('Add to playlist'),
+              onTap: () async {
+                Navigator.pop(context);
+                await showAddToPlaylistSheet(this.context, track);
+              },
             ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -590,23 +571,22 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Delete playlist?'),
-            content: Text(
-              'Delete ${playlist.name}? The tracks themselves will remain on your device.',
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Delete playlist?'),
+        content: Text(
+          'Delete ${playlist.name}? The tracks themselves will remain on your device.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
     if (confirmed == true && context.mounted) {
       await manager.deletePlaylist(playlist.id);
@@ -629,24 +609,22 @@ class _PlaylistMiniPlayerHost extends StatelessWidget {
         if (item == null) return const SizedBox.shrink();
         return StreamBuilder<PlaybackState>(
           stream: handler.playbackState,
-          builder:
-              (context, playbackSnapshot) => MiniPlayer(
-                item: item,
-                isPlaying: playbackSnapshot.data?.playing ?? false,
-                duration: item.duration,
-                positionStream: handler.player.positionStream,
-                onPlayPause: controller.togglePlayback,
-                onPrevious: handler.skipToPrevious,
-                onNext: handler.skipToNext,
-                onDismiss: () => unawaited(handler.stop()),
-                onRepeat: controller.toggleRepeat,
-                onQueue: () => Navigator.of(context).push(QueueScreen.route()),
-                repeatMode:
-                    playbackSnapshot.data?.repeatMode ?? controller.repeatMode,
-                onStop: handler.stop,
-                onTap:
-                    () => Navigator.of(context).push(FullPlayerScreen.route()),
-              ),
+          builder: (context, playbackSnapshot) => MiniPlayer(
+            item: item,
+            isPlaying: playbackSnapshot.data?.playing ?? false,
+            duration: item.duration,
+            positionStream: handler.player.positionStream,
+            onPlayPause: controller.togglePlayback,
+            onPrevious: handler.skipToPrevious,
+            onNext: handler.skipToNext,
+            onDismiss: () => unawaited(handler.stop()),
+            onRepeat: controller.toggleRepeat,
+            onQueue: () => Navigator.of(context).push(QueueScreen.route()),
+            repeatMode:
+                playbackSnapshot.data?.repeatMode ?? controller.repeatMode,
+            onStop: handler.stop,
+            onTap: () => Navigator.of(context).push(FullPlayerScreen.route()),
+          ),
         );
       },
     );
@@ -712,12 +690,11 @@ class _EditMetadataDialogState extends State<_EditMetadataDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed:
-              () => Navigator.pop(context, <String>[
-                _title.text,
-                _artist.text,
-                _album.text,
-              ]),
+          onPressed: () => Navigator.pop(context, <String>[
+            _title.text,
+            _artist.text,
+            _album.text,
+          ]),
           child: const Text('Save'),
         ),
       ],
@@ -787,10 +764,9 @@ class _RenamePlaylistDialogState extends State<_RenamePlaylistDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed:
-              _nameController.text.trim().isEmpty
-                  ? null
-                  : () => Navigator.pop(context, _nameController.text),
+          onPressed: _nameController.text.trim().isEmpty
+              ? null
+              : () => Navigator.pop(context, _nameController.text),
           child: const Text('Save'),
         ),
       ],
