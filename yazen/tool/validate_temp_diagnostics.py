@@ -21,6 +21,17 @@ media_library = (ROOT / "lib/services/media_library_service.dart").read_text()
 native = (ROOT / "android/app/src/main/kotlin/com/yassine/yazen/MainActivity.kt").read_text()
 workflow = (ROOT / ".github/workflows/flutter-ci.yml").read_text()
 
+# Dart format is allowed to wrap calls and named callback assignments across
+# lines. These guardrails verify the markers independently instead of relying
+# on one exact source layout.
+artwork_has_load_span = "startSpan(" in artwork and "'artwork_load'" in artwork
+main_has_pointer_capture = (
+    "onPointerMove:" in main
+    and "DiagnosticsService.instance.pointerMove" in main
+    and "onPointerSignal:" in main
+    and "DiagnosticsService.instance.pointerSignal" in main
+)
+
 required = [
     ("Flutter frame timing callback", "addTimingsCallback" in service and "frame_timing" in service),
     ("refresh-rate-aware frame budget", "frameBudgetUs" in service and "displayRefreshRateHz" in service),
@@ -29,13 +40,13 @@ required = [
     ("full-session JSONL plus JSON and Markdown export", "jsonl" in service.lower() and "yazen-pi-session-$stamp.json" in service and "yazen-pi-session-$stamp.md" in service),
     ("session starts at app launch", "DiagnosticsService.instance.start()" in main),
     ("Settings export entry", "Export complete session" in settings),
-    ("artwork tracing, cache and first-visible timing", "startSpan('artwork_load'" in artwork and "artwork_disk_cache_hit" in artwork and "artwork_first_frame_visible" in artwork),
+    ("artwork tracing, cache and first-visible timing", artwork_has_load_span and "artwork_disk_cache_hit" in artwork and "artwork_first_frame_visible" in artwork),
     ("MediaStore query tracing", "startSpan(operation)" in media_library and "endSpan(span, 'complete'" in media_library),
     ("Android process memory and CPU snapshot", "processPssKb" in native and "processCpuPercentSincePreviousSnapshot" in native and "threadCpuSamples" in native),
     ("Android Downloads journal streaming", "exportDiagnosticJournal" in native and "YAZEN Diagnostics" in native),
     ("hybrid resource sampling", "Duration(seconds: _deepInvestigation ? 1 : 5)" in service and "resourceSnapshotCountInJournal" in service),
     ("diagnostics CI branch", "diagnostics/temp-performance-v1" in workflow),
-    ("global pointer capture", "onPointerMove: DiagnosticsService.instance.pointerMove" in main and "onPointerSignal: DiagnosticsService.instance.pointerSignal" in main),
+    ("global pointer capture", main_has_pointer_capture),
     ("trace correlation and full journal analysis", "activeSpanFrameCorrelations" in service and "_buildAnalysisFromJournal" in service),
     ("diagnostics overhead instrumentation", "_recordCostSamples" in service and "_journalDrainTotalUs" in service),
     ("library pipeline stage spans", "library_sort_filter" in (ROOT / "lib/services/library_data_engine.dart").read_text() and "library_index_snapshot_build" in (ROOT / "lib/services/library_data_engine.dart").read_text()),
