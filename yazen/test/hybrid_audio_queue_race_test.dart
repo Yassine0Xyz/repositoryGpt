@@ -294,39 +294,42 @@ void main() {
     await player.close();
   });
 
-  test('library refresh keeps the current list visible until replacement is ready', () async {
-    final songs = <MediaTrack>[_folderTrack(1, '/Music/Old')];
-    final library = _FakeMediaLibrary(songs: songs);
-    final player = _FakeAudioPlayer();
-    final handler = HybridAudioHandler(
-      player: player,
-      playbackStore: const PlaybackStateStore(),
-    );
-    final manager = LocalPlaylistManager();
-    await manager.initialize();
-    final controller = HybridMusicController(
-      library: library,
-      audioHandler: handler,
-      playlistManager: manager,
-    );
+  test(
+    'library refresh keeps the current list visible until replacement is ready',
+    () async {
+      final songs = <MediaTrack>[_folderTrack(1, '/Music/Old')];
+      final library = _FakeMediaLibrary(songs: songs);
+      final player = _FakeAudioPlayer();
+      final handler = HybridAudioHandler(
+        player: player,
+        playbackStore: const PlaybackStateStore(),
+      );
+      final manager = LocalPlaylistManager();
+      await manager.initialize();
+      final controller = HybridMusicController(
+        library: library,
+        audioHandler: handler,
+        playlistManager: manager,
+      );
 
-    await controller.loadLibrary();
-    final replacement = Completer<List<MediaTrack>>();
-    library.songQueryCompleter = replacement;
-    final refresh = controller.refreshLibrary();
-    await Future<void>.delayed(Duration.zero);
+      await controller.loadLibrary();
+      final replacement = Completer<List<MediaTrack>>();
+      library.songQueryCompleter = replacement;
+      final refresh = controller.refreshLibrary();
+      await Future<void>.delayed(Duration.zero);
 
-    expect(controller.isLoading, isFalse);
-    expect(controller.localSongs.single.id, 'queue-1');
+      expect(controller.isLoading, isFalse);
+      expect(controller.localSongs.single.id, 'queue-1');
 
-    replacement.complete(<MediaTrack>[_folderTrack(2, '/Music/New')]);
-    await refresh;
-    expect(controller.localSongs.single.id, 'queue-2');
+      replacement.complete(<MediaTrack>[_folderTrack(2, '/Music/New')]);
+      await refresh;
+      expect(controller.localSongs.single.id, 'queue-2');
 
-    controller.dispose();
-    await handler.dispose();
-    await player.close();
-  });
+      controller.dispose();
+      await handler.dispose();
+      await player.close();
+    },
+  );
 
   test('folder queries use the refreshed library snapshot', () async {
     final songs = <MediaTrack>[_folderTrack(1, '/Music/Old')];

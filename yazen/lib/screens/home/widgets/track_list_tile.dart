@@ -97,7 +97,9 @@ class TrackListTile extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: tokens.surface.withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(ThemeRadii.small),
+                            borderRadius: BorderRadius.circular(
+                              ThemeRadii.small,
+                            ),
                             border: Border.all(
                               color: tokens.accent.withValues(alpha: 0.5),
                             ),

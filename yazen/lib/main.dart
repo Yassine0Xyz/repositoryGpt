@@ -115,8 +115,10 @@ class HybridMusicApp extends StatelessWidget {
                       onPointerDown: DiagnosticsService.instance.pointerDown,
                       onPointerMove: DiagnosticsService.instance.pointerMove,
                       onPointerUp: DiagnosticsService.instance.pointerUp,
-                      onPointerCancel: DiagnosticsService.instance.pointerCancel,
-                      onPointerSignal: DiagnosticsService.instance.pointerSignal,
+                      onPointerCancel:
+                          DiagnosticsService.instance.pointerCancel,
+                      onPointerSignal:
+                          DiagnosticsService.instance.pointerSignal,
                       child: NotificationListener<ScrollNotification>(
                         onNotification: (notification) {
                           final metrics = notification.metrics;

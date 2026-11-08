@@ -161,14 +161,15 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   void _handlePlayerStateChanged() {
-    DiagnosticsService.instance.record('playback_state_changed', <String, Object?>{
-      'playing': _player.playing,
-      'processingState': _player.processingState.name,
-      'currentIndex': _player.currentIndex,
-      'durationMs': _player.duration?.inMilliseconds,
-      'speed': _playbackSpeed,
-      'volume': _player.volume,
-    });
+    DiagnosticsService.instance
+        .record('playback_state_changed', <String, Object?>{
+          'playing': _player.playing,
+          'processingState': _player.processingState.name,
+          'currentIndex': _player.currentIndex,
+          'durationMs': _player.duration?.inMilliseconds,
+          'speed': _playbackSpeed,
+          'volume': _player.volume,
+        });
     _broadcastPlaybackState();
     _syncProgressSaveTimer();
   }
@@ -181,7 +182,13 @@ class HybridAudioHandler extends BaseAudioHandler
     }
     _resumeTimer ??= Timer.periodic(const Duration(seconds: 15), (_) {
       if (_player.playing) {
-        DiagnosticsService.instance.record('playback_progress_checkpoint', <String, Object?>{'trackId': _activeTrack?.id, 'positionMs': _player.position.inMilliseconds, 'durationMs': _player.duration?.inMilliseconds, 'queueIndex': _player.currentIndex});
+        DiagnosticsService.instance
+            .record('playback_progress_checkpoint', <String, Object?>{
+              'trackId': _activeTrack?.id,
+              'positionMs': _player.position.inMilliseconds,
+              'durationMs': _player.duration?.inMilliseconds,
+              'queueIndex': _player.currentIndex,
+            });
         _persistPlayback();
       }
     });
@@ -270,14 +277,25 @@ class HybridAudioHandler extends BaseAudioHandler
     Duration? duration, {
     SleepTimerMode mode = SleepTimerMode.duration,
   }) {
-    DiagnosticsService.instance.record('sleep_timer_set_requested', <String, Object?>{'mode': mode.name, 'durationMs': duration?.inMilliseconds});
+    DiagnosticsService.instance.record(
+      'sleep_timer_set_requested',
+      <String, Object?>{
+        'mode': mode.name,
+        'durationMs': duration?.inMilliseconds,
+      },
+    );
     _cancelSleepTimer();
     if (mode == SleepTimerMode.duration &&
         (duration == null || duration <= Duration.zero)) {
       return;
     }
     _sleepTimerMode = mode;
-    DiagnosticsService.instance.record('sleep_timer_activated', <String, Object?>{'mode': mode.name, 'durationMs': duration?.inMilliseconds, 'trackIndex': _player.currentIndex});
+    DiagnosticsService.instance
+        .record('sleep_timer_activated', <String, Object?>{
+          'mode': mode.name,
+          'durationMs': duration?.inMilliseconds,
+          'trackIndex': _player.currentIndex,
+        });
     if (mode == SleepTimerMode.endOfCurrentTrack) {
       _sleepTrackIndex = _player.currentIndex;
       _sleepRemainingController.add(null);
@@ -315,8 +333,14 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   void _cancelSleepTimer() {
-    final wasActive = _sleepDeadline != null || _sleepTimerMode == SleepTimerMode.endOfCurrentTrack;
-    if (wasActive) DiagnosticsService.instance.record('sleep_timer_cancelled', <String, Object?>{'mode': _sleepTimerMode.name});
+    final wasActive =
+        _sleepDeadline != null ||
+        _sleepTimerMode == SleepTimerMode.endOfCurrentTrack;
+    if (wasActive)
+      DiagnosticsService.instance.record(
+        'sleep_timer_cancelled',
+        <String, Object?>{'mode': _sleepTimerMode.name},
+      );
     _sleepTimer?.cancel();
     _sleepFadeTimer?.cancel();
     _sleepCountdownTimer?.cancel();
@@ -332,7 +356,13 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   void _finishSleepTimer() {
-    DiagnosticsService.instance.record('sleep_timer_finished', <String, Object?>{'mode': _sleepTimerMode.name, 'trackIndex': _player.currentIndex});
+    DiagnosticsService.instance.record(
+      'sleep_timer_finished',
+      <String, Object?>{
+        'mode': _sleepTimerMode.name,
+        'trackIndex': _player.currentIndex,
+      },
+    );
     _sleepFadeTimer?.cancel();
     _sleepFadeTimer = null;
     _endingTrackForSleepTimer = false;
@@ -381,7 +411,10 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   Future<void> _handleInterruption(AudioInterruptionEvent event) async {
-    DiagnosticsService.instance.record('audio_interruption', <String, Object?>{'type': event.type.name, 'begin': event.begin});
+    DiagnosticsService.instance.record('audio_interruption', <String, Object?>{
+      'type': event.type.name,
+      'begin': event.begin,
+    });
     // Another media app commonly emits a pause-type focus event. Do not turn
     // that external focus change into a YAZEN pause; Android may still duck or
     // revoke focus when system policy requires it.
@@ -410,7 +443,10 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   Future<bool> setEqualizerEnabled(bool enabled) async {
-    DiagnosticsService.instance.record('equalizer_enabled_changed', <String, Object?>{'enabled': enabled});
+    DiagnosticsService.instance.record(
+      'equalizer_enabled_changed',
+      <String, Object?>{'enabled': enabled},
+    );
     await _equalizerSettingsReady;
     final previous = _equalizerEnabled;
     _equalizerEnabled = enabled;
@@ -437,7 +473,10 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   Future<bool> setEqualizerBandGain(int bandIndex, double gain) async {
-    DiagnosticsService.instance.record('equalizer_band_gain_changed', <String, Object?>{'bandIndex': bandIndex, 'gain': gain});
+    DiagnosticsService.instance.record(
+      'equalizer_band_gain_changed',
+      <String, Object?>{'bandIndex': bandIndex, 'gain': gain},
+    );
     await _equalizerSettingsReady;
     if (!_equalizerAvailable || bandIndex < 0 || bandIndex >= 32) return false;
     final parameters = _equalizerParameters;
@@ -457,7 +496,10 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   Future<void> setEqualizerPreset(String preset) async {
-    DiagnosticsService.instance.record('equalizer_preset_changed', <String, Object?>{'preset': preset});
+    DiagnosticsService.instance.record(
+      'equalizer_preset_changed',
+      <String, Object?>{'preset': preset},
+    );
     await _equalizerSettingsReady;
     _equalizerPreset = preset;
     _scheduleEqualizerSettingsSave();
@@ -632,7 +674,10 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   Future<void> playTrack(MediaTrack track, {bool autoPlay = true}) {
-    DiagnosticsService.instance.record('audio_handler_track_request', <String, Object?>{'trackId': track.id, 'autoPlay': autoPlay});
+    DiagnosticsService.instance.record(
+      'audio_handler_track_request',
+      <String, Object?>{'trackId': track.id, 'autoPlay': autoPlay},
+    );
     final request = ++_selectionRequest;
     _queueGeneration++;
     _interruptSupersededSelection();
@@ -687,7 +732,13 @@ class HybridAudioHandler extends BaseAudioHandler
   }
 
   Future<void> playTrackQueue(List<MediaTrack> tracks, {int initialIndex = 0}) {
-    DiagnosticsService.instance.record('audio_handler_queue_request', <String, Object?>{'trackCount': tracks.length, 'initialIndex': initialIndex});
+    DiagnosticsService.instance.record(
+      'audio_handler_queue_request',
+      <String, Object?>{
+        'trackCount': tracks.length,
+        'initialIndex': initialIndex,
+      },
+    );
     if (tracks.isEmpty || _isDisposed) return Future<void>.value();
     final requestedTracks = List<MediaTrack>.unmodifiable(tracks);
     final request = ++_selectionRequest;
@@ -1005,14 +1056,26 @@ class HybridAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> play() async {
-    DiagnosticsService.instance.record('audio_handler_play_requested', <String, Object?>{'trackId': _activeTrack?.id, 'positionMs': _player.position.inMilliseconds});
+    DiagnosticsService.instance.record(
+      'audio_handler_play_requested',
+      <String, Object?>{
+        'trackId': _activeTrack?.id,
+        'positionMs': _player.position.inMilliseconds,
+      },
+    );
     _interruptionCoordinator.onUserPlay();
     final playback = _player.play();
     _syncProgressSaveTimer();
     _persistPlayback();
     _broadcastPlaybackState();
     await playback;
-    DiagnosticsService.instance.record('audio_handler_play_future_completed', <String, Object?>{'trackId': _activeTrack?.id, 'positionMs': _player.position.inMilliseconds});
+    DiagnosticsService.instance.record(
+      'audio_handler_play_future_completed',
+      <String, Object?>{
+        'trackId': _activeTrack?.id,
+        'positionMs': _player.position.inMilliseconds,
+      },
+    );
     _syncProgressSaveTimer();
     _persistPlayback();
   }
@@ -1028,17 +1091,35 @@ class HybridAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> pause() async {
-    DiagnosticsService.instance.record('audio_handler_pause_requested', <String, Object?>{'trackId': _activeTrack?.id, 'positionMs': _player.position.inMilliseconds});
+    DiagnosticsService.instance.record(
+      'audio_handler_pause_requested',
+      <String, Object?>{
+        'trackId': _activeTrack?.id,
+        'positionMs': _player.position.inMilliseconds,
+      },
+    );
     _interruptionCoordinator.onUserPause();
     await _player.pause();
-    DiagnosticsService.instance.record('audio_handler_pause_completed', <String, Object?>{'trackId': _activeTrack?.id, 'positionMs': _player.position.inMilliseconds});
+    DiagnosticsService.instance.record(
+      'audio_handler_pause_completed',
+      <String, Object?>{
+        'trackId': _activeTrack?.id,
+        'positionMs': _player.position.inMilliseconds,
+      },
+    );
     _syncProgressSaveTimer();
     _persistPlayback();
   }
 
   @override
   Future<void> stop() {
-    DiagnosticsService.instance.record('audio_handler_stop_requested', <String, Object?>{'trackId': _activeTrack?.id, 'queueLength': _queueTracks.length});
+    DiagnosticsService.instance.record(
+      'audio_handler_stop_requested',
+      <String, Object?>{
+        'trackId': _activeTrack?.id,
+        'queueLength': _queueTracks.length,
+      },
+    );
     _cancelSleepTimer();
     // Stop is the explicit close action from the notification/mini-player.
     // Cancel pending selections and clear just_audio's native sources and our
@@ -1074,14 +1155,25 @@ class HybridAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> seek(Duration position) async {
-    DiagnosticsService.instance.record('audio_handler_seek_requested', <String, Object?>{'fromMs': _player.position.inMilliseconds, 'toMs': position.inMilliseconds, 'trackId': _activeTrack?.id});
+    DiagnosticsService.instance
+        .record('audio_handler_seek_requested', <String, Object?>{
+          'fromMs': _player.position.inMilliseconds,
+          'toMs': position.inMilliseconds,
+          'trackId': _activeTrack?.id,
+        });
     await _player.seek(position);
     _persistPlayback();
   }
 
   @override
   Future<void> skipToNext() => _runQueueMutation(() async {
-    DiagnosticsService.instance.record('audio_handler_next_requested', <String, Object?>{'currentIndex': _player.currentIndex, 'queueLength': _queueTracks.length});
+    DiagnosticsService.instance.record(
+      'audio_handler_next_requested',
+      <String, Object?>{
+        'currentIndex': _player.currentIndex,
+        'queueLength': _queueTracks.length,
+      },
+    );
     final circularIndex = _circularQueueTargetIndex(1);
     if (circularIndex != null) {
       await _seekAndStartQueueIndex(circularIndex);
@@ -1105,7 +1197,13 @@ class HybridAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> skipToPrevious() => _runQueueMutation(() async {
-    DiagnosticsService.instance.record('audio_handler_previous_requested', <String, Object?>{'currentIndex': _player.currentIndex, 'queueLength': _queueTracks.length});
+    DiagnosticsService.instance.record(
+      'audio_handler_previous_requested',
+      <String, Object?>{
+        'currentIndex': _player.currentIndex,
+        'queueLength': _queueTracks.length,
+      },
+    );
     final circularIndex = _circularQueueTargetIndex(-1);
     if (circularIndex != null) {
       await _seekAndStartQueueIndex(circularIndex);
@@ -1117,7 +1215,13 @@ class HybridAudioHandler extends BaseAudioHandler
   });
 
   void _onProcessingStateChanged(ProcessingState state) {
-    DiagnosticsService.instance.record('playback_processing_state_changed', <String, Object?>{'state': state.name, 'currentIndex': _player.currentIndex});
+    DiagnosticsService.instance.record(
+      'playback_processing_state_changed',
+      <String, Object?>{
+        'state': state.name,
+        'currentIndex': _player.currentIndex,
+      },
+    );
     if (state != ProcessingState.completed || _autoAdvanceInFlight) return;
     _autoAdvanceInFlight = true;
     unawaited(_advanceAfterCompletion());
@@ -1139,7 +1243,12 @@ class HybridAudioHandler extends BaseAudioHandler
       // the circular Next action instead of stopping at the final item.
       final nextQueueIndex = _circularQueueTargetIndex(1);
       if (nextQueueIndex != null) {
-        DiagnosticsService.instance.record('playback_auto_advance', <String, Object?>{'fromIndex': _player.currentIndex, 'toIndex': nextQueueIndex, 'queueLength': _queueTracks.length});
+        DiagnosticsService.instance
+            .record('playback_auto_advance', <String, Object?>{
+              'fromIndex': _player.currentIndex,
+              'toIndex': nextQueueIndex,
+              'queueLength': _queueTracks.length,
+            });
         await _player.seek(Duration.zero, index: nextQueueIndex);
         if (stillCurrent()) _startPlaybackWithoutHoldingQueue();
       }
@@ -1150,21 +1259,33 @@ class HybridAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> setSpeed(double speed) async {
-    DiagnosticsService.instance.record('playback_speed_changed', <String, Object?>{'previous': _playbackSpeed, 'requested': speed});
+    DiagnosticsService.instance.record(
+      'playback_speed_changed',
+      <String, Object?>{'previous': _playbackSpeed, 'requested': speed},
+    );
     _playbackSpeed = speed.clamp(0.25, 3.0).toDouble();
     await _player.setSpeed(_playbackSpeed);
     _persistPlayback();
   }
 
   Future<void> setVolume(double volume) async {
-    DiagnosticsService.instance.record('playback_volume_changed', <String, Object?>{'previous': _volume, 'requested': volume});
+    DiagnosticsService.instance.record(
+      'playback_volume_changed',
+      <String, Object?>{'previous': _volume, 'requested': volume},
+    );
     _volume = volume.clamp(0.0, 1.0).toDouble();
     await _player.setVolume(_volume);
   }
 
   @override
   Future<void> setShuffleMode(AudioServiceShuffleMode shuffleMode) async {
-    DiagnosticsService.instance.record('playback_shuffle_mode_changed', <String, Object?>{'previous': _shuffleMode.name, 'next': shuffleMode.name});
+    DiagnosticsService.instance.record(
+      'playback_shuffle_mode_changed',
+      <String, Object?>{
+        'previous': _shuffleMode.name,
+        'next': shuffleMode.name,
+      },
+    );
     await _player.setShuffleModeEnabled(
       shuffleMode != AudioServiceShuffleMode.none,
     );
@@ -1176,7 +1297,10 @@ class HybridAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
-    DiagnosticsService.instance.record('audio_handler_repeat_mode_changed', <String, Object?>{'previous': _repeatMode.name, 'next': repeatMode.name});
+    DiagnosticsService.instance.record(
+      'audio_handler_repeat_mode_changed',
+      <String, Object?>{'previous': _repeatMode.name, 'next': repeatMode.name},
+    );
     final loopMode = switch (repeatMode) {
       AudioServiceRepeatMode.none => LoopMode.off,
       AudioServiceRepeatMode.one => LoopMode.one,
@@ -1226,7 +1350,14 @@ class HybridAudioHandler extends BaseAudioHandler
       _sleepTrackIndex = index;
     }
     final track = _queueTracks[index];
-    DiagnosticsService.instance.record('playback_track_index_changed', <String, Object?>{'index': index, 'trackId': track.id, 'queueLength': _queueTracks.length});
+    DiagnosticsService.instance.record(
+      'playback_track_index_changed',
+      <String, Object?>{
+        'index': index,
+        'trackId': track.id,
+        'queueLength': _queueTracks.length,
+      },
+    );
     _activeTrack = track;
     mediaItem.add(track.toMediaItem());
     _broadcastPlaybackState();
@@ -1238,7 +1369,12 @@ class HybridAudioHandler extends BaseAudioHandler
     if (_queueTracks.isEmpty || items.isEmpty) return;
     final safeIndex = index.clamp(0, _queueTracks.length - 1).toInt();
     _activeTrack = _queueTracks[safeIndex];
-    DiagnosticsService.instance.record('playback_queue_published', <String, Object?>{'queueLength': items.length, 'selectedIndex': safeIndex, 'trackId': _activeTrack?.id});
+    DiagnosticsService.instance
+        .record('playback_queue_published', <String, Object?>{
+          'queueLength': items.length,
+          'selectedIndex': safeIndex,
+          'trackId': _activeTrack?.id,
+        });
     // These synchronous subjects are updated in one method so consumers do
     // not receive a newly selected item with an old queue context.
     queue.add(List<MediaItem>.unmodifiable(items));

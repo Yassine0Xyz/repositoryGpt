@@ -326,11 +326,7 @@ class _FastScrollThumbState extends State<_FastScrollThumb> {
                 alignment: Alignment.topCenter,
                 child: Transform.translate(
                   offset: Offset(0, _dragTop ?? calculatedTop),
-                  child: SizedBox(
-                    width: 42,
-                    height: thumbHeight,
-                    child: child,
-                  ),
+                  child: SizedBox(width: 42, height: thumbHeight, child: child),
                 ),
               );
             },
@@ -476,7 +472,8 @@ class _HiddenFilesView extends StatelessWidget {
               key: ValueKey<String>('hidden-${track.id}'),
               track: track,
               compact: compact,
-              onTap: () => controller.playTrackQueue(tracks, initialIndex: index),
+              onTap:
+                  () => controller.playTrackQueue(tracks, initialIndex: index),
               trailing: IconButton(
                 tooltip: 'Restore to library',
                 onPressed:
@@ -853,8 +850,7 @@ class _SongsViewState extends State<_SongsView> {
                       (gridCrossAxisExtent - ((gridColumnCount - 1) * 10)) /
                       gridColumnCount;
                   final gridArtworkSize = gridCellWidth - 16;
-                  final gridExtent =
-                      gridArtworkSize + (compact ? 98 : 106);
+                  final gridExtent = gridArtworkSize + (compact ? 98 : 106);
                   return widget.tracks.isEmpty
                       ? const _CategoryEmptyState(
                         icon: Icons.library_music_outlined,
@@ -1078,7 +1074,9 @@ class _TrackGridTile extends StatelessWidget {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: tokens.accent.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(ThemeRadii.medium),
+                          borderRadius: BorderRadius.circular(
+                            ThemeRadii.medium,
+                          ),
                         ),
                         child: Icon(
                           Icons.check_rounded,

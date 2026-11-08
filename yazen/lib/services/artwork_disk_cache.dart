@@ -127,26 +127,19 @@ class ArtworkDiskCache {
     );
     final acquired = await _writeGate.acquire();
     if (!acquired) {
-      DiagnosticsService.instance.endSpan(
-        gateSpan,
-        'rejected',
-        <String, Object?>{
-          'activeWrites': _writeGate.activeLoads,
-          'queuedWrites': _writeGate.queuedLoads,
-          'rejectedWrites': _writeGate.rejectedLoads,
-        },
-      );
+      DiagnosticsService.instance
+          .endSpan(gateSpan, 'rejected', <String, Object?>{
+            'activeWrites': _writeGate.activeLoads,
+            'queuedWrites': _writeGate.queuedLoads,
+            'rejectedWrites': _writeGate.rejectedLoads,
+          });
       return false;
     }
-    DiagnosticsService.instance.endSpan(
-      gateSpan,
-      'complete',
-      <String, Object?>{
-        'activeWrites': _writeGate.activeLoads,
-        'queuedWrites': _writeGate.queuedLoads,
-        'rejectedWrites': _writeGate.rejectedLoads,
-      },
-    );
+    DiagnosticsService.instance.endSpan(gateSpan, 'complete', <String, Object?>{
+      'activeWrites': _writeGate.activeLoads,
+      'queuedWrites': _writeGate.queuedLoads,
+      'rejectedWrites': _writeGate.rejectedLoads,
+    });
 
     final ioSpan = DiagnosticsService.instance.startSpan(
       'artwork_disk_write_io',
@@ -162,9 +155,11 @@ class ArtworkDiskCache {
           bytes.length > _maxBytes ~/ 2 ||
           width <= 0 ||
           height <= 0) {
-        DiagnosticsService.instance.endSpan(ioSpan, 'skipped', <String, Object?>{
-          'reason': 'invalid_artwork_payload',
-        });
+        DiagnosticsService.instance.endSpan(
+          ioSpan,
+          'skipped',
+          <String, Object?>{'reason': 'invalid_artwork_payload'},
+        );
         return false;
       }
       final directory = await _directory();
@@ -208,7 +203,9 @@ class ArtworkDiskCache {
   }
 
   Future<void> _trim(Directory directory) async {
-    final span = DiagnosticsService.instance.startSpan('artwork_disk_cache_trim');
+    final span = DiagnosticsService.instance.startSpan(
+      'artwork_disk_cache_trim',
+    );
     try {
       final files =
           await directory

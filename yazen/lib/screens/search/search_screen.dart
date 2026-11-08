@@ -184,11 +184,7 @@ class _SearchScreenState extends State<SearchScreen> {
       matchingTracks.where((track) => !track.isVideo),
     );
 
-    _addGroup(
-      entries,
-      'Songs',
-      _cachedAudioResults.map(_SearchEntry.track),
-    );
+    _addGroup(entries, 'Songs', _cachedAudioResults.map(_SearchEntry.track));
     _addGroup(
       entries,
       'Artists',

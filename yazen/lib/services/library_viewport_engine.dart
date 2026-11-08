@@ -22,12 +22,12 @@ class LibraryViewportEngine {
     _pendingThumbTravel = travel;
     if (_pendingFrameCallback != null) return;
 
-    _pendingFrameCallback = SchedulerBinding.instance.scheduleFrameCallback(
-      (_) {
-        _pendingFrameCallback = null;
-        _applyPendingJump();
-      },
-    );
+    _pendingFrameCallback = SchedulerBinding.instance.scheduleFrameCallback((
+      _,
+    ) {
+      _pendingFrameCallback = null;
+      _applyPendingJump();
+    });
   }
 
   void flushPendingJump() {

@@ -224,8 +224,10 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                                 : DismissDirection.endToStart,
                         background: const _DeleteBackground(),
                         onDismissed:
-                            (_) =>
-                                manager.removeFromPlaylist(playlist.id, track.id),
+                            (_) => manager.removeFromPlaylist(
+                              playlist.id,
+                              track.id,
+                            ),
                         child: TrackListTile(
                           key: ValueKey('track-${playlist.id}-${track.id}'),
                           track: track,
@@ -267,7 +269,8 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                           },
                           isFavorite: controller.isFavorite(track),
                           onFavorite: () => controller.toggleFavorite(track),
-                          onAddToPlaylist: () => _showTrackActions(context, track),
+                          onAddToPlaylist:
+                              () => _showTrackActions(context, track),
                         ),
                       );
                     },

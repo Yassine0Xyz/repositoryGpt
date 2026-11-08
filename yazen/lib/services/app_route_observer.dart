@@ -17,13 +17,19 @@ class DiagnosticsRouteObserver extends RouteObserver<ModalRoute<dynamic>> {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
-    DiagnosticsService.instance.routeChanged(_routeName(previousRoute), action: 'pop');
+    DiagnosticsService.instance.routeChanged(
+      _routeName(previousRoute),
+      action: 'pop',
+    );
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    DiagnosticsService.instance.routeChanged(_routeName(newRoute), action: 'replace');
+    DiagnosticsService.instance.routeChanged(
+      _routeName(newRoute),
+      action: 'replace',
+    );
   }
 }
 

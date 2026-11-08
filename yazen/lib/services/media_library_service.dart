@@ -151,20 +151,18 @@ class MediaLibraryService {
         return _toMediaTracks(songs);
       });
 
-  Future<List<MediaTrack>> querySongsFrom(
-    AudiosFromType type,
-    Object where,
-  ) => _measure<List<MediaTrack>>('media_query_filtered_songs', () async {
-    if (!await ensurePermission()) return const <MediaTrack>[];
-    final songs = await _audioQuery.queryAudiosFrom(
-      type,
-      where,
-      sortType: SongSortType.TITLE,
-      orderType: OrderType.ASC_OR_SMALLER,
-      ignoreCase: true,
-    );
-    return _toMediaTracks(songs);
-  });
+  Future<List<MediaTrack>> querySongsFrom(AudiosFromType type, Object where) =>
+      _measure<List<MediaTrack>>('media_query_filtered_songs', () async {
+        if (!await ensurePermission()) return const <MediaTrack>[];
+        final songs = await _audioQuery.queryAudiosFrom(
+          type,
+          where,
+          sortType: SongSortType.TITLE,
+          orderType: OrderType.ASC_OR_SMALLER,
+          ignoreCase: true,
+        );
+        return _toMediaTracks(songs);
+      });
 
   Future<List<MediaTrack>> querySongsInFolder(String folder) async {
     final songs = await querySongs();
@@ -172,13 +170,24 @@ class MediaLibraryService {
   }
 
   List<MediaTrack> _toMediaTracks(Iterable<SongModel> songs) {
-    final span = DiagnosticsService.instance.startSpan('media_song_model_mapping', data: <String, Object?>{'inputCount': songs is List ? songs.length : null});
+    final span = DiagnosticsService.instance.startSpan(
+      'media_song_model_mapping',
+      data: <String, Object?>{
+        'inputCount': songs is List ? songs.length : null,
+      },
+    );
     try {
-      final tracks = List<MediaTrack>.unmodifiable(songs.map(MediaTrack.fromSong));
-      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{'trackCount': tracks.length});
+      final tracks = List<MediaTrack>.unmodifiable(
+        songs.map(MediaTrack.fromSong),
+      );
+      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{
+        'trackCount': tracks.length,
+      });
       return tracks;
     } catch (error) {
-      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{'error': error.toString()});
+      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{
+        'error': error.toString(),
+      });
       rethrow;
     }
   }
@@ -214,20 +223,28 @@ class MediaLibraryService {
       });
 
   Future<List<String>> queryFolders() async {
-    final span = DiagnosticsService.instance.startSpan('media_folder_identity_build');
+    final span = DiagnosticsService.instance.startSpan(
+      'media_folder_identity_build',
+    );
     try {
       final songs = await querySongs();
       final folders = folderIdentities(songs);
-      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{'trackCount': songs.length, 'folderCount': folders.length});
+      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{
+        'trackCount': songs.length,
+        'folderCount': folders.length,
+      });
       return folders;
     } catch (error) {
-      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{'error': error.toString()});
+      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{
+        'error': error.toString(),
+      });
       rethrow;
     }
   }
 
-  Future<List<MediaTrack>> queryVideos({bool requestPermission = true}) =>
-      _measure<List<MediaTrack>>('media_query_videos', () async {
+  Future<List<MediaTrack>> queryVideos({
+    bool requestPermission = true,
+  }) => _measure<List<MediaTrack>>('media_query_videos', () async {
     final bool granted;
     try {
       granted =
@@ -251,7 +268,10 @@ class MediaLibraryService {
       'queryVideos',
     );
     if (raw == null) return const <MediaTrack>[];
-    final mappingSpan = DiagnosticsService.instance.startSpan('media_video_dart_mapping', data: <String, Object?>{'rawEntryCount': raw.length});
+    final mappingSpan = DiagnosticsService.instance.startSpan(
+      'media_video_dart_mapping',
+      data: <String, Object?>{'rawEntryCount': raw.length},
+    );
     try {
       final mapped = raw
           .whereType<Map<dynamic, dynamic>>()
@@ -285,10 +305,18 @@ class MediaLibraryService {
             );
           })
           .toList(growable: false);
-      DiagnosticsService.instance.endSpan(mappingSpan, 'complete', <String, Object?>{'trackCount': mapped.length});
+      DiagnosticsService.instance.endSpan(
+        mappingSpan,
+        'complete',
+        <String, Object?>{'trackCount': mapped.length},
+      );
       return mapped;
     } catch (error) {
-      DiagnosticsService.instance.endSpan(mappingSpan, 'failed', <String, Object?>{'error': error.toString()});
+      DiagnosticsService.instance.endSpan(
+        mappingSpan,
+        'failed',
+        <String, Object?>{'error': error.toString()},
+      );
       rethrow;
     }
   });
@@ -298,10 +326,14 @@ class MediaLibraryService {
     try {
       final result = await work();
       final count = result is Iterable ? result.length : null;
-      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{'itemCount': count});
+      DiagnosticsService.instance.endSpan(span, 'complete', <String, Object?>{
+        'itemCount': count,
+      });
       return result;
     } catch (error) {
-      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{'error': error.toString()});
+      DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{
+        'error': error.toString(),
+      });
       rethrow;
     }
   }
