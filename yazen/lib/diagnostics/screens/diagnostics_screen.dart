@@ -126,27 +126,31 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                   children: <Widget>[
                     _Metric(
                       label: 'Process PSS',
-                      value: pssKb == null
-                          ? '—'
-                          : '${(pssKb / 1024).toStringAsFixed(1)} MB',
+                      value:
+                          pssKb == null
+                              ? '—'
+                              : '${(pssKb / 1024).toStringAsFixed(1)} MB',
                     ),
                     _Metric(
                       label: 'Process CPU',
-                      value: cpuPercent == null || cpuPercent < 0
-                          ? 'Sampling…'
-                          : '${cpuPercent.toStringAsFixed(1)}%',
+                      value:
+                          cpuPercent == null || cpuPercent < 0
+                              ? 'Sampling…'
+                              : '${cpuPercent.toStringAsFixed(1)}%',
                     ),
                     _Metric(
                       label: 'Java heap',
-                      value: javaHeap == null
-                          ? '—'
-                          : '${(javaHeap / (1024 * 1024)).toStringAsFixed(1)} MB',
+                      value:
+                          javaHeap == null
+                              ? '—'
+                              : '${(javaHeap / (1024 * 1024)).toStringAsFixed(1)} MB',
                     ),
                     _Metric(
                       label: 'Native heap',
-                      value: nativeHeap == null
-                          ? '—'
-                          : '${(nativeHeap / (1024 * 1024)).toStringAsFixed(1)} MB',
+                      value:
+                          nativeHeap == null
+                              ? '—'
+                              : '${(nativeHeap / (1024 * 1024)).toStringAsFixed(1)} MB',
                     ),
                   ],
                 ),
@@ -311,7 +315,8 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
           _sectionCard(
             context,
             title: 'SESSION RECORDING',
-            subtitle: 'Append-only JSONL journal; the dashboard cache is not the export source',
+            subtitle:
+                'Append-only JSONL journal; the dashboard cache is not the export source',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -322,8 +327,9 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                     'Pause/resume event collection for this session',
                   ),
                   value: diagnostics.recording,
-                  onChanged: (value) =>
-                      setState(() => diagnostics.setRecording(value)),
+                  onChanged:
+                      (value) =>
+                          setState(() => diagnostics.setRecording(value)),
                 ),
                 const Divider(),
                 SwitchListTile(
@@ -333,15 +339,18 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                     '1s native snapshots + Flutter build/layout/paint timelines in Debug/Profile; lightweight Hybrid monitoring remains active',
                   ),
                   value: diagnostics.deepInvestigation,
-                  onChanged: (value) =>
-                      setState(() => diagnostics.setDeepInvestigation(value)),
+                  onChanged:
+                      (value) => setState(
+                        () => diagnostics.setDeepInvestigation(value),
+                      ),
                 ),
                 const SizedBox(height: 8),
                 _StatusLine(
                   label: 'Journal',
-                  value: diagnostics.journalReady
-                      ? 'Writing session events'
-                      : 'Initializing…',
+                  value:
+                      diagnostics.journalReady
+                          ? 'Writing session events'
+                          : 'Initializing…',
                   good: diagnostics.journalReady,
                 ),
                 _StatusLine(
@@ -382,13 +391,14 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
           const SizedBox(height: 12),
           Card(
             child: ListTile(
-              leading: _exporting
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.file_download_outlined),
+              leading:
+                  _exporting
+                      ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : const Icon(Icons.file_download_outlined),
               title: const Text('Export complete session'),
               subtitle: const Text(
                 'JSONL raw event journal + JSON analysis + Markdown report',
@@ -443,23 +453,25 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
       if (!mounted) return;
       showDialog<void>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Session export completed'),
-          content: SelectableText(
-            '${result.eventCount} journal events persisted.\n\n${result.paths.join('\n\n')}',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Session export completed'),
+              content: SelectableText(
+                '${result.eventCount} journal events persisted.\n\n${result.paths.join('\n\n')}',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Export failed: $error')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Export failed: $error')));
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -485,8 +497,9 @@ class _Metric extends StatelessWidget {
         const SizedBox(height: 3),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w800),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],
     ),

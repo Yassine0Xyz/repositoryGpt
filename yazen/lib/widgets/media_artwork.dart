@@ -210,15 +210,16 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
       _lastWidth = cached.width;
       _lastHeight = cached.height;
     }
-    _future = cached == null
-        ? _load(
-            widget.track,
-            widget.imageUri,
-            key,
-            pixels,
-            widget.cropContentBounds,
-          )
-        : Future<_CachedArtwork?>.value(cached);
+    _future =
+        cached == null
+            ? _load(
+              widget.track,
+              widget.imageUri,
+              key,
+              pixels,
+              widget.cropContentBounds,
+            )
+            : Future<_CachedArtwork?>.value(cached);
   }
 
   Future<_CachedArtwork?> _load(
@@ -408,24 +409,26 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     // Detailed DevTools TimelineTask tracing stays out of release builds.
     // The lightweight YAZEN span is retained for session-level investigation.
     final traceEnabled = kDebugMode || kProfileMode;
-    final task = traceEnabled
-        ? (developer.TimelineTask()..start(
-            'YAZEN.artwork.load',
-            arguments: <String, Object?>{
-              'pixels': pixels,
-              'crop': cropContentBounds,
-              'source': track?.isLocal == true ? 'local' : 'remote',
-            },
-          ))
-        : null;
+    final task =
+        traceEnabled
+            ? (developer.TimelineTask()..start(
+              'YAZEN.artwork.load',
+              arguments: <String, Object?>{
+                'pixels': pixels,
+                'crop': cropContentBounds,
+                'source': track?.isLocal == true ? 'local' : 'remote',
+              },
+            ))
+            : null;
     _artworkLoadsStarted++;
     final loadSpan = DiagnosticsService.instance.startSpan(
       'artwork_load',
       data: <String, Object?>{
         'pixels': pixels,
-        'source': track?.isLocal == true
-            ? 'local'
-            : (imageUri == null ? 'unknown' : 'remote'),
+        'source':
+            track?.isLocal == true
+                ? 'local'
+                : (imageUri == null ? 'unknown' : 'remote'),
         'trackId': track?.id,
         ..._diagnosticsSnapshot(),
       },
@@ -564,15 +567,12 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
           cacheKey: sourceKey,
           targetPixels: pixels,
         );
-        DiagnosticsService.instance.endSpan(
-          cropSpan,
-          'complete',
-          <String, Object?>{
-            'outputBytes': processed.bytes.length,
-            'width': processed.width,
-            'height': processed.height,
-          },
-        );
+        DiagnosticsService.instance
+            .endSpan(cropSpan, 'complete', <String, Object?>{
+              'outputBytes': processed.bytes.length,
+              'width': processed.width,
+              'height': processed.height,
+            });
       } catch (error, stackTrace) {
         DiagnosticsService.instance.endSpan(
           cropSpan,
@@ -681,9 +681,10 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.read<ThemeProvider>().tokens;
-    final radius = widget.circular
-        ? BorderRadius.circular(widget.size / 2)
-        : widget.borderRadius ?? BorderRadius.circular(widget.size * 0.18);
+    final radius =
+        widget.circular
+            ? BorderRadius.circular(widget.size / 2)
+            : widget.borderRadius ?? BorderRadius.circular(widget.size * 0.18);
     return ClipRRect(
       borderRadius: radius,
       child: FutureBuilder<_CachedArtwork?>(
@@ -715,19 +716,17 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
               frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                 if (frame != null && _lastRenderedCacheKey != _cacheKey) {
                   _lastRenderedCacheKey = _cacheKey;
-                  DiagnosticsService.instance.record(
-                    'artwork_first_frame_visible',
-                    <String, Object?>{
-                      'cacheKey': _cacheKey,
-                      'timeToFirstVisibleFrameUs':
-                          DiagnosticsService.instance.elapsedMicroseconds -
-                          _loadStartedAtUs,
-                      'wasSynchronouslyLoaded': wasSynchronouslyLoaded,
-                      'frameNumber': frame,
-                      'width': width,
-                      'height': height,
-                    },
-                  );
+                  DiagnosticsService.instance
+                      .record('artwork_first_frame_visible', <String, Object?>{
+                        'cacheKey': _cacheKey,
+                        'timeToFirstVisibleFrameUs':
+                            DiagnosticsService.instance.elapsedMicroseconds -
+                            _loadStartedAtUs,
+                        'wasSynchronouslyLoaded': wasSynchronouslyLoaded,
+                        'frameNumber': frame,
+                        'width': width,
+                        'height': height,
+                      });
                 }
                 return child;
               },

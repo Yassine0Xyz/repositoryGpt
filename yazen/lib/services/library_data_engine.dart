@@ -46,13 +46,12 @@ class LibraryIndexSnapshot {
       (byFolder[identity] ??= <MediaTrack>[]).add(track);
     }
 
-    final folderList = byFolder.keys.toList(growable: false)
-      ..sort((a, b) {
-        final byLabel = folderDisplayName(a)
-            .toLowerCase()
-            .compareTo(folderDisplayName(b).toLowerCase());
-        return byLabel == 0 ? a.compareTo(b) : byLabel;
-      });
+    final folderList = byFolder.keys.toList(growable: false)..sort((a, b) {
+      final byLabel = folderDisplayName(
+        a,
+      ).toLowerCase().compareTo(folderDisplayName(b).toLowerCase());
+      return byLabel == 0 ? a.compareTo(b) : byLabel;
+    });
 
     return LibraryIndexSnapshot._(
       revision: revision,
@@ -269,16 +268,18 @@ class LibraryDataEngine {
     // Dynamic playlist statistics are stable for this query generation. Read
     // them once per track instead of repeatedly invoking provider callbacks
     // from the O(n log n) comparator.
-    final playCounts = sort == LibrarySort.mostPlayed
-        ? <String, int>{
-            for (final track in candidates) track.id: playCount(track.id),
-          }
-        : const <String, int>{};
-    final playedAt = sort == LibrarySort.recentlyPlayedFirst
-        ? <String, DateTime?>{
-            for (final track in candidates) track.id: lastPlayed(track.id),
-          }
-        : const <String, DateTime?>{};
+    final playCounts =
+        sort == LibrarySort.mostPlayed
+            ? <String, int>{
+              for (final track in candidates) track.id: playCount(track.id),
+            }
+            : const <String, int>{};
+    final playedAt =
+        sort == LibrarySort.recentlyPlayedFirst
+            ? <String, DateTime?>{
+              for (final track in candidates) track.id: lastPlayed(track.id),
+            }
+            : const <String, DateTime?>{};
     candidates.sort(
       (a, b) => _compareTracks(
         a,
@@ -310,16 +311,18 @@ class LibraryDataEngine {
     required DateTime? Function(String trackId) lastPlayed,
   }) {
     final sorted = List<MediaTrack>.of(tracks);
-    final playCounts = sort == LibrarySort.mostPlayed
-        ? <String, int>{
-            for (final track in sorted) track.id: playCount(track.id),
-          }
-        : const <String, int>{};
-    final playedAt = sort == LibrarySort.recentlyPlayedFirst
-        ? <String, DateTime?>{
-            for (final track in sorted) track.id: lastPlayed(track.id),
-          }
-        : const <String, DateTime?>{};
+    final playCounts =
+        sort == LibrarySort.mostPlayed
+            ? <String, int>{
+              for (final track in sorted) track.id: playCount(track.id),
+            }
+            : const <String, int>{};
+    final playedAt =
+        sort == LibrarySort.recentlyPlayedFirst
+            ? <String, DateTime?>{
+              for (final track in sorted) track.id: lastPlayed(track.id),
+            }
+            : const <String, DateTime?>{};
     sorted.sort(
       (a, b) => _compareTracks(
         a,
@@ -369,8 +372,9 @@ class LibraryDataEngine {
       case LibrarySort.mostPlayed:
         primary = (playCounts[b.id] ?? 0).compareTo(playCounts[a.id] ?? 0);
       case LibrarySort.recentlyPlayedFirst:
-        primary = _dateOrEpoch(playedAt[b.id])
-            .compareTo(_dateOrEpoch(playedAt[a.id]));
+        primary = _dateOrEpoch(
+          playedAt[b.id],
+        ).compareTo(_dateOrEpoch(playedAt[a.id]));
     }
     if (primary != 0) return primary;
     final title = aKeys.title.compareTo(bKeys.title);

@@ -51,8 +51,8 @@ class LocalMediaScreen extends StatelessWidget {
         ],
         Expanded(
           child: Selector<HybridMusicController, _LocalMediaSnapshot>(
-            selector: (_, value) =>
-                _LocalMediaSnapshot.from(value, selectedTab),
+            selector:
+                (_, value) => _LocalMediaSnapshot.from(value, selectedTab),
             builder: (context, snapshot, _) {
               // Do not keep the previous tab's full lazy viewport alive during
               // a cross-fade. On large libraries that temporarily doubles the
@@ -262,9 +262,10 @@ class _FastScrollThumbState extends State<_FastScrollThumb> {
       behavior: HitTestBehavior.opaque,
       onVerticalDragStart: (_) => _dragTop = _currentThumbTop,
       onVerticalDragUpdate: (details) {
-        final next = (_dragTop! + details.delta.dy)
-            .clamp(0.0, _currentTravel)
-            .toDouble();
+        final next =
+            (_dragTop! + details.delta.dy)
+                .clamp(0.0, _currentTravel)
+                .toDouble();
         _dragTop = next;
         _queueJumpFromTop(next);
       },
@@ -309,12 +310,14 @@ class _FastScrollThumbState extends State<_FastScrollThumb> {
               final trackHeight = constraints.maxHeight;
               final viewport = position.viewportDimension;
               final content = viewport + position.maxScrollExtent;
-              final thumbHeight = (trackHeight * viewport / content)
-                  .clamp(58.0, 118.0)
-                  .toDouble();
-              final travel = (trackHeight - thumbHeight)
-                  .clamp(1.0, double.infinity)
-                  .toDouble();
+              final thumbHeight =
+                  (trackHeight * viewport / content)
+                      .clamp(58.0, 118.0)
+                      .toDouble();
+              final travel =
+                  (trackHeight - thumbHeight)
+                      .clamp(1.0, double.infinity)
+                      .toDouble();
               final calculatedTop =
                   position.pixels / position.maxScrollExtent * travel;
               _currentThumbTop = calculatedTop;
@@ -358,33 +361,40 @@ class _LocalMediaSnapshot {
     return _LocalMediaSnapshot(
       isLoading: controller.isLoading,
       permissionRequired: controller.permissionRequired,
-      visibleTracks: needsVisibleTracks
-          ? controller.visibleTracks
-          : const <MediaTrack>[],
-      folderCounts: selectedTab == LibraryTab.folders
-          ? controller.folderTrackCounts
-          : const <String, int>{},
-      hiddenTracks: selectedTab == LibraryTab.hidden
-          ? controller.hiddenTracks
-          : const <MediaTrack>[],
-      artists: selectedTab == LibraryTab.artists
-          ? controller.artists
-          : const <ArtistModel>[],
-      albums: selectedTab == LibraryTab.albums
-          ? controller.albums
-          : const <AlbumModel>[],
-      playlists: selectedTab == LibraryTab.playlists
-          ? controller.playlists
-          : const <PlaylistModel>[],
-      folders: selectedTab == LibraryTab.folders
-          ? controller.folders
-          : const <String>[],
-      customPlaylists: selectedTab == LibraryTab.playlists
-          ? controller.playlistManager.playlists
-          : const <EchoPlaylist>[],
-      favorites: selectedTab == LibraryTab.playlists
-          ? controller.playlistManager.favorites
-          : const <MediaTrack>[],
+      visibleTracks:
+          needsVisibleTracks ? controller.visibleTracks : const <MediaTrack>[],
+      folderCounts:
+          selectedTab == LibraryTab.folders
+              ? controller.folderTrackCounts
+              : const <String, int>{},
+      hiddenTracks:
+          selectedTab == LibraryTab.hidden
+              ? controller.hiddenTracks
+              : const <MediaTrack>[],
+      artists:
+          selectedTab == LibraryTab.artists
+              ? controller.artists
+              : const <ArtistModel>[],
+      albums:
+          selectedTab == LibraryTab.albums
+              ? controller.albums
+              : const <AlbumModel>[],
+      playlists:
+          selectedTab == LibraryTab.playlists
+              ? controller.playlists
+              : const <PlaylistModel>[],
+      folders:
+          selectedTab == LibraryTab.folders
+              ? controller.folders
+              : const <String>[],
+      customPlaylists:
+          selectedTab == LibraryTab.playlists
+              ? controller.playlistManager.playlists
+              : const <EchoPlaylist>[],
+      favorites:
+          selectedTab == LibraryTab.playlists
+              ? controller.playlistManager.favorites
+              : const <MediaTrack>[],
     );
   }
 
@@ -462,12 +472,12 @@ class _HiddenFilesView extends StatelessWidget {
               key: ValueKey<String>('hidden-${track.id}'),
               track: track,
               compact: compact,
-              onTap: () =>
-                  controller.playTrackQueue(tracks, initialIndex: index),
+              onTap:
+                  () => controller.playTrackQueue(tracks, initialIndex: index),
               trailing: IconButton(
                 tooltip: 'Restore to library',
-                onPressed: () =>
-                    manager.setHidden(<String>[track.id], hidden: false),
+                onPressed:
+                    () => manager.setHidden(<String>[track.id], hidden: false),
                 icon: const Icon(Icons.visibility_rounded),
               ),
             );
@@ -521,41 +531,50 @@ class _SongsViewState extends State<_SongsView> {
     final action = await showModalBottomSheet<_SelectionMoreAction>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.share_rounded),
-              title: const Text('Share selected songs'),
-              onTap: () => Navigator.pop(context, _SelectionMoreAction.share),
+      builder:
+          (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.share_rounded),
+                  title: const Text('Share selected songs'),
+                  onTap:
+                      () => Navigator.pop(context, _SelectionMoreAction.share),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info_outline_rounded),
+                  title: const Text('File information'),
+                  onTap:
+                      () => Navigator.pop(
+                        context,
+                        _SelectionMoreAction.information,
+                      ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.visibility_off_rounded),
+                  title: const Text('Remove from YAZEN library'),
+                  onTap:
+                      () => Navigator.pop(context, _SelectionMoreAction.hide),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_forever_outlined,
+                    color: Colors.redAccent,
+                  ),
+                  title: const Text('Delete original files'),
+                  subtitle: const Text(
+                    'Permanently removes the selected files from this device.',
+                  ),
+                  onTap:
+                      () => Navigator.pop(
+                        context,
+                        _SelectionMoreAction.deleteFiles,
+                      ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.info_outline_rounded),
-              title: const Text('File information'),
-              onTap: () =>
-                  Navigator.pop(context, _SelectionMoreAction.information),
-            ),
-            ListTile(
-              leading: const Icon(Icons.visibility_off_rounded),
-              title: const Text('Remove from YAZEN library'),
-              onTap: () => Navigator.pop(context, _SelectionMoreAction.hide),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.delete_forever_outlined,
-                color: Colors.redAccent,
-              ),
-              title: const Text('Delete original files'),
-              subtitle: const Text(
-                'Permanently removes the selected files from this device.',
-              ),
-              onTap: () =>
-                  Navigator.pop(context, _SelectionMoreAction.deleteFiles),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (action == null || !mounted) return;
 
@@ -608,8 +627,9 @@ class _SongsViewState extends State<_SongsView> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       '${tracks.length} ${tracks.length == 1 ? 'song' : 'songs'} selected',
-                      style: Theme.of(context).textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.w900),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ),
@@ -690,25 +710,28 @@ class _SongsViewState extends State<_SongsView> {
   Future<void> _deleteSelectedFiles(List<MediaTrack> tracks) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete original files?'),
-        content: Text(
-          'This permanently deletes ${tracks.length} '
-          '${tracks.length == 1 ? 'audio file' : 'audio files'} from this device. '
-          'YAZEN will ask Android to confirm the deletion. This cannot be undone.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete original files?'),
+            content: Text(
+              'This permanently deletes ${tracks.length} '
+              '${tracks.length == 1 ? 'audio file' : 'audio files'} from this device. '
+              'YAZEN will ask Android to confirm the deletion. This cannot be undone.',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Continue'),
+              ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continue'),
-          ),
-        ],
-      ),
     );
     if (confirmed != true || !mounted) return;
     final controller = context.read<HybridMusicController>();
@@ -830,14 +853,15 @@ class _SongsViewState extends State<_SongsView> {
                   final gridExtent = gridArtworkSize + (compact ? 98 : 106);
                   return widget.tracks.isEmpty
                       ? const _CategoryEmptyState(
-                          icon: Icons.library_music_outlined,
-                          title: 'No matching songs',
-                          subtitle:
-                              'Try clearing the search or changing filters.',
-                        )
+                        icon: Icons.library_music_outlined,
+                        title: 'No matching songs',
+                        subtitle:
+                            'Try clearing the search or changing filters.',
+                      )
                       : _LibraryScrollSurface(
-                          child: grid
-                              ? LibraryTrackViewport(
+                        child:
+                            grid
+                                ? LibraryTrackViewport(
                                   padding: EdgeInsets.fromLTRB(
                                     ThemeSpacing.x3,
                                     0,
@@ -853,16 +877,17 @@ class _SongsViewState extends State<_SongsView> {
                                       ),
                                   itemCount: widget.tracks.length,
                                   addAutomaticKeepAlives: false,
-                                  itemBuilder: (_, index) => _buildGridTrack(
-                                    context,
-                                    controller,
-                                    widget.tracks[index],
-                                    index,
-                                    displaySettings.density,
-                                    gridArtworkSize,
-                                  ),
+                                  itemBuilder:
+                                      (_, index) => _buildGridTrack(
+                                        context,
+                                        controller,
+                                        widget.tracks[index],
+                                        index,
+                                        displaySettings.density,
+                                        gridArtworkSize,
+                                      ),
                                 )
-                              : LibraryTrackViewport(
+                                : LibraryTrackViewport(
                                   padding: EdgeInsets.fromLTRB(
                                     ThemeSpacing.x3,
                                     0,
@@ -872,22 +897,23 @@ class _SongsViewState extends State<_SongsView> {
                                   addAutomaticKeepAlives: false,
                                   itemExtent:
                                       displaySettings.density ==
-                                          LibraryDensity.compact
-                                      ? 70
-                                      : compactRows
-                                      ? 76
-                                      : 82,
+                                              LibraryDensity.compact
+                                          ? 70
+                                          : compactRows
+                                          ? 76
+                                          : 82,
                                   itemCount: widget.tracks.length,
-                                  itemBuilder: (_, index) => _buildListTrack(
-                                    context,
-                                    controller,
-                                    widget.tracks[index],
-                                    index,
-                                    displaySettings.density,
-                                    compactRows,
-                                  ),
+                                  itemBuilder:
+                                      (_, index) => _buildListTrack(
+                                        context,
+                                        controller,
+                                        widget.tracks[index],
+                                        index,
+                                        displaySettings.density,
+                                        compactRows,
+                                      ),
                                 ),
-                        );
+                      );
                 },
               ),
             ),
@@ -922,12 +948,12 @@ class _SongsViewState extends State<_SongsView> {
           }
         },
         isFavorite: controller.isFavorite(track),
-        onFavorite: _selectionMode
-            ? null
-            : () => controller.toggleFavorite(track),
-        onAddToPlaylist: _selectionMode
-            ? null
-            : () => showAddToPlaylistSheet(context, track),
+        onFavorite:
+            _selectionMode ? null : () => controller.toggleFavorite(track),
+        onAddToPlaylist:
+            _selectionMode
+                ? null
+                : () => showAddToPlaylistSheet(context, track),
       ),
     );
   }
@@ -955,12 +981,10 @@ class _SongsViewState extends State<_SongsView> {
         }
       },
       onLongPress: () => _toggleSelection(track),
-      onFavorite: _selectionMode
-          ? null
-          : () => controller.toggleFavorite(track),
-      onAddToPlaylist: _selectionMode
-          ? null
-          : () => showAddToPlaylistSheet(context, track),
+      onFavorite:
+          _selectionMode ? null : () => controller.toggleFavorite(track),
+      onAddToPlaylist:
+          _selectionMode ? null : () => showAddToPlaylistSheet(context, track),
     );
   }
 }
@@ -1232,15 +1256,17 @@ class _ArtistsView extends StatelessWidget {
         return _ArtistCard(
           key: ValueKey<int>(artist.id),
           artist: artist,
-          onTap: () => Navigator.of(context).push(
-            LocalEntityTracksScreen.route(
-              title: artist.artist.trim().isEmpty
-                  ? 'Unknown artist'
-                  : artist.artist,
-              subtitle: 'Tracks by this artist will appear here.',
-              loadTracks: () => controller.tracksForArtist(artist.id),
-            ),
-          ),
+          onTap:
+              () => Navigator.of(context).push(
+                LocalEntityTracksScreen.route(
+                  title:
+                      artist.artist.trim().isEmpty
+                          ? 'Unknown artist'
+                          : artist.artist,
+                  subtitle: 'Tracks by this artist will appear here.',
+                  loadTracks: () => controller.tracksForArtist(artist.id),
+                ),
+              ),
         );
       },
     );
@@ -1331,13 +1357,17 @@ class _AlbumsView extends StatelessWidget {
         return _AlbumCard(
           key: ValueKey<int>(album.id),
           album: album,
-          onTap: () => Navigator.of(context).push(
-            LocalEntityTracksScreen.route(
-              title: album.album.trim().isEmpty ? 'Unknown album' : album.album,
-              subtitle: 'Tracks from this album will appear here.',
-              loadTracks: () => controller.tracksForAlbum(album.id),
-            ),
-          ),
+          onTap:
+              () => Navigator.of(context).push(
+                LocalEntityTracksScreen.route(
+                  title:
+                      album.album.trim().isEmpty
+                          ? 'Unknown album'
+                          : album.album,
+                  subtitle: 'Tracks from this album will appear here.',
+                  loadTracks: () => controller.tracksForAlbum(album.id),
+                ),
+              ),
         );
       },
     );
@@ -1424,14 +1454,17 @@ class _FoldersView extends StatelessWidget {
           key: ValueKey<String>(folder),
           folder: folder,
           count: counts[folder] ?? 0,
-          onTap: () => Navigator.of(context).push(
-            LocalEntityTracksScreen.route(
-              title: folderDisplayName(folder),
-              subtitle: 'Audio files in this folder will appear here.',
-              loadTracks: () =>
-                  context.read<HybridMusicController>().tracksForFolder(folder),
-            ),
-          ),
+          onTap:
+              () => Navigator.of(context).push(
+                LocalEntityTracksScreen.route(
+                  title: folderDisplayName(folder),
+                  subtitle: 'Audio files in this folder will appear here.',
+                  loadTracks:
+                      () => context
+                          .read<HybridMusicController>()
+                          .tracksForFolder(folder),
+                ),
+              ),
         );
       },
     );
@@ -1539,40 +1572,62 @@ class _VideosView extends StatelessWidget {
               settings: settings,
             ),
             Expanded(
-              child: tracks.isEmpty
-                  ? const _CategoryEmptyState(
-                      icon: Icons.ondemand_video_rounded,
-                      title: 'No matching videos',
-                      subtitle: 'Try clearing the search or changing the video library.',
-                    )
-                  : _LibraryScrollSurface(
-                      child: grid
-                          ? LibraryTrackViewport(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-                              gridDelegate:
-                                  SliverGridDelegateWithMaxCrossAxisExtent(
-                                    maxCrossAxisExtent: 280,
-                                    mainAxisExtent: gridExtent,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 12,
+              child:
+                  tracks.isEmpty
+                      ? const _CategoryEmptyState(
+                        icon: Icons.ondemand_video_rounded,
+                        title: 'No matching videos',
+                        subtitle:
+                            'Try clearing the search or changing the video library.',
+                      )
+                      : _LibraryScrollSurface(
+                        child:
+                            grid
+                                ? LibraryTrackViewport(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    20,
+                                    0,
+                                    20,
+                                    30,
                                   ),
-                              itemCount: tracks.length,
-                              addAutomaticKeepAlives: false,
-                              cacheExtent: 220,
-                              itemBuilder: (context, index) =>
-                                  _videoCard(context, tracks[index], compact),
-                            )
-                          : LibraryTrackViewport(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-                              itemCount: tracks.length,
-                              addAutomaticKeepAlives: false,
-                              cacheExtent: 220,
-                              separatorBuilder: (_, _) =>
-                                  SizedBox(height: compact ? 12 : 24),
-                              itemBuilder: (context, index) =>
-                                  _videoCard(context, tracks[index], compact),
-                            ),
-                    ),
+                                  gridDelegate:
+                                      SliverGridDelegateWithMaxCrossAxisExtent(
+                                        maxCrossAxisExtent: 280,
+                                        mainAxisExtent: gridExtent,
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 12,
+                                      ),
+                                  itemCount: tracks.length,
+                                  addAutomaticKeepAlives: false,
+                                  cacheExtent: 220,
+                                  itemBuilder:
+                                      (context, index) => _videoCard(
+                                        context,
+                                        tracks[index],
+                                        compact,
+                                      ),
+                                )
+                                : LibraryTrackViewport(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    20,
+                                    0,
+                                    20,
+                                    30,
+                                  ),
+                                  itemCount: tracks.length,
+                                  addAutomaticKeepAlives: false,
+                                  cacheExtent: 220,
+                                  separatorBuilder:
+                                      (_, _) =>
+                                          SizedBox(height: compact ? 12 : 24),
+                                  itemBuilder:
+                                      (context, index) => _videoCard(
+                                        context,
+                                        tracks[index],
+                                        compact,
+                                      ),
+                                ),
+                      ),
             ),
           ],
         );
@@ -1585,8 +1640,9 @@ class _VideosView extends StatelessWidget {
         key: ValueKey<String>(track.id),
         track: track,
         compact: compact,
-        onPlay: () =>
-            Navigator.of(context).push(YazenVideoPlayerScreen.route(track)),
+        onPlay:
+            () =>
+                Navigator.of(context).push(YazenVideoPlayerScreen.route(track)),
       );
 }
 
@@ -1616,12 +1672,14 @@ class _LibraryViewToolbarState extends State<_LibraryViewToolbar> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.read<ThemeProvider>().tokens;
-    final layout = widget.isVideos
-        ? widget.settings.videosLayoutMode
-        : widget.settings.layoutMode;
-    final density = widget.isVideos
-        ? widget.settings.videosDensity
-        : widget.settings.density;
+    final layout =
+        widget.isVideos
+            ? widget.settings.videosLayoutMode
+            : widget.settings.layoutMode;
+    final density =
+        widget.isVideos
+            ? widget.settings.videosDensity
+            : widget.settings.density;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
       child: Column(
@@ -1630,9 +1688,10 @@ class _LibraryViewToolbarState extends State<_LibraryViewToolbar> {
             children: <Widget>[
               IconButton(
                 tooltip: 'Display settings',
-                onPressed: () => setState(
-                  () => _showDisplayControls = !_showDisplayControls,
-                ),
+                onPressed:
+                    () => setState(
+                      () => _showDisplayControls = !_showDisplayControls,
+                    ),
                 icon: Icon(
                   _showDisplayControls
                       ? Icons.tune_rounded
@@ -1734,13 +1793,14 @@ class _VideoPreviewCard extends StatelessWidget {
                   tag: 'track-art-${track.id}',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: track.isVideo
-                        ? VideoThumbnailWidget(track: track, size: 340)
-                        : YazenMediaArtwork(
-                            track: track,
-                            size: 340,
-                            cropContentBounds: false,
-                          ),
+                    child:
+                        track.isVideo
+                            ? VideoThumbnailWidget(track: track, size: 340)
+                            : YazenMediaArtwork(
+                              track: track,
+                              size: 340,
+                              cropContentBounds: false,
+                            ),
                   ),
                 ),
                 Positioned(
@@ -1877,8 +1937,9 @@ class _PlaylistsView extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Your collections',
-                  style: Theme.of(context).textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w900),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
                 ),
               ),
               FilledButton.tonalIcon(
@@ -1894,9 +1955,10 @@ class _PlaylistsView extends StatelessWidget {
             key: const ValueKey<String>('collection:favorites'),
             icon: Icons.favorite_rounded,
             artworkTrack: favorites.isEmpty ? null : favorites.last,
-            artwork: favorites.isEmpty
-                ? null
-                : YazenMediaArtwork(track: favorites.last, size: 82),
+            artwork:
+                favorites.isEmpty
+                    ? null
+                    : YazenMediaArtwork(track: favorites.last, size: 82),
             title: 'Favorites',
             subtitle: 'Tracks you want to keep close',
             count: favorites.length,
@@ -1910,17 +1972,19 @@ class _PlaylistsView extends StatelessWidget {
             key: ValueKey<String>('collection:${playlist.id}'),
             icon: Icons.queue_music_rounded,
             artworkTrack: playlist.coverTrack,
-            artwork: playlist.coverTrack == null
-                ? null
-                : YazenMediaArtwork(track: playlist.coverTrack!, size: 82),
+            artwork:
+                playlist.coverTrack == null
+                    ? null
+                    : YazenMediaArtwork(track: playlist.coverTrack!, size: 82),
             title: playlist.name,
             subtitle: 'Custom playlist',
             count: playlist.tracks.length,
-            onTap: () =>
-                Navigator.of(context)
-                    .push(PlaylistDetailsScreen.route(playlist.id)),
-            onDelete: () =>
-                controller.playlistManager.deletePlaylist(playlist.id),
+            onTap:
+                () => Navigator.of(
+                  context,
+                ).push(PlaylistDetailsScreen.route(playlist.id)),
+            onDelete:
+                () => controller.playlistManager.deletePlaylist(playlist.id),
           );
         }
         final deviceIndex = customIndex - customPlaylists.length;
@@ -1931,13 +1995,16 @@ class _PlaylistsView extends StatelessWidget {
           title: playlist.playlist,
           subtitle: 'Device playlist',
           count: playlist.numOfSongs,
-          onTap: () => Navigator.of(context).push(
-            LocalEntityTracksScreen.route(
-              title: playlist.playlist,
-              subtitle: 'Tracks from this device playlist will appear here.',
-              loadTracks: () => controller.tracksForDevicePlaylist(playlist.id),
-            ),
-          ),
+          onTap:
+              () => Navigator.of(context).push(
+                LocalEntityTracksScreen.route(
+                  title: playlist.playlist,
+                  subtitle:
+                      'Tracks from this device playlist will appear here.',
+                  loadTracks:
+                      () => controller.tracksForDevicePlaylist(playlist.id),
+                ),
+              ),
         );
       },
     );
@@ -2037,12 +2104,12 @@ class _CollectionCardState extends State<_CollectionCard> {
         final tokens = context.read<ThemeProvider>().tokens;
         final palette = snapshot.data;
         final accent = palette?.safeAccent ?? tokens.accent;
-        final surface = palette == null
-            ? tokens.surface
-            : Color.lerp(tokens.surface, palette.dominant, 0.18)!;
-        final foreground = surface.computeLuminance() > 0.46
-            ? Colors.black
-            : Colors.white;
+        final surface =
+            palette == null
+                ? tokens.surface
+                : Color.lerp(tokens.surface, palette.dominant, 0.18)!;
+        final foreground =
+            surface.computeLuminance() > 0.46 ? Colors.black : Colors.white;
         final secondary = foreground.withValues(alpha: 0.68);
         return InkWell(
           onTap: widget.onTap,
@@ -2163,8 +2230,9 @@ class _CategoryEmptyState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w800),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             Text(

@@ -92,11 +92,12 @@ class HybridMusicApp extends StatelessWidget {
           value: playlistManager,
         ),
         ChangeNotifierProvider<HybridMusicController>(
-          create: (context) => HybridMusicController(
-            library: MediaLibraryService(),
-            audioHandler: audioHandler,
-            playlistManager: context.read<LocalPlaylistManager>(),
-          )..loadLibrary(),
+          create:
+              (context) => HybridMusicController(
+                library: MediaLibraryService(),
+                audioHandler: audioHandler,
+                playlistManager: context.read<LocalPlaylistManager>(),
+              )..loadLibrary(),
         ),
       ],
       child: Consumer<ThemeProvider>(
@@ -106,49 +107,52 @@ class HybridMusicApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             navigatorObservers: <NavigatorObserver>[appRouteObserver],
             theme: themeState.theme,
-            builder: (context, child) => NowPlayingScope(
-              child: ThemeBackdrop(
-                child: Listener(
-                  behavior: HitTestBehavior.deferToChild,
-                  onPointerDown: DiagnosticsService.instance.pointerDown,
-                  onPointerMove: DiagnosticsService.instance.pointerMove,
-                  onPointerUp: DiagnosticsService.instance.pointerUp,
-                  onPointerCancel: DiagnosticsService.instance.pointerCancel,
-                  onPointerSignal: DiagnosticsService.instance.pointerSignal,
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (notification) {
-                      final metrics = notification.metrics;
-                      if (notification is ScrollStartNotification) {
-                        ScrollPerformanceMode.noteScrollActivity();
-                        DiagnosticsService.instance.scrollStarted(
-                          axis: metrics.axis.name,
-                          pixels: metrics.pixels,
-                          depth: notification.depth,
-                        );
-                      } else if (notification is ScrollUpdateNotification) {
-                        DiagnosticsService.instance.scrollUpdated(
-                          axis: metrics.axis.name,
-                          depth: notification.depth,
-                          delta: notification.scrollDelta,
-                          pixels: metrics.pixels,
-                          maxExtent: metrics.maxScrollExtent,
-                        );
-                      } else if (notification is ScrollEndNotification) {
-                        ScrollPerformanceMode.noteScrollEnd();
-                        DiagnosticsService.instance.scrollEnded(
-                          axis: metrics.axis.name,
-                          depth: notification.depth,
-                          pixels: metrics.pixels,
-                          maxExtent: metrics.maxScrollExtent,
-                        );
-                      }
-                      return false;
-                    },
-                    child: child ?? const SizedBox.shrink(),
+            builder:
+                (context, child) => NowPlayingScope(
+                  child: ThemeBackdrop(
+                    child: Listener(
+                      behavior: HitTestBehavior.deferToChild,
+                      onPointerDown: DiagnosticsService.instance.pointerDown,
+                      onPointerMove: DiagnosticsService.instance.pointerMove,
+                      onPointerUp: DiagnosticsService.instance.pointerUp,
+                      onPointerCancel:
+                          DiagnosticsService.instance.pointerCancel,
+                      onPointerSignal:
+                          DiagnosticsService.instance.pointerSignal,
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          final metrics = notification.metrics;
+                          if (notification is ScrollStartNotification) {
+                            ScrollPerformanceMode.noteScrollActivity();
+                            DiagnosticsService.instance.scrollStarted(
+                              axis: metrics.axis.name,
+                              pixels: metrics.pixels,
+                              depth: notification.depth,
+                            );
+                          } else if (notification is ScrollUpdateNotification) {
+                            DiagnosticsService.instance.scrollUpdated(
+                              axis: metrics.axis.name,
+                              depth: notification.depth,
+                              delta: notification.scrollDelta,
+                              pixels: metrics.pixels,
+                              maxExtent: metrics.maxScrollExtent,
+                            );
+                          } else if (notification is ScrollEndNotification) {
+                            ScrollPerformanceMode.noteScrollEnd();
+                            DiagnosticsService.instance.scrollEnded(
+                              axis: metrics.axis.name,
+                              depth: notification.depth,
+                              pixels: metrics.pixels,
+                              maxExtent: metrics.maxScrollExtent,
+                            );
+                          }
+                          return false;
+                        },
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
             home: const HomeScreen(),
           );
         },

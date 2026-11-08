@@ -183,13 +183,11 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     final next = filters.toSet()..remove(LibraryFilter.all);
     final current = _libraryFiltersByTab[_selectedTab] ?? <LibraryFilter>{};
     if (current.length == next.length && current.containsAll(next)) return;
-    DiagnosticsService.instance.record(
-      'library_filters_changed',
-      <String, Object?>{
-        'tab': _selectedTab.name,
-        'filters': next.map((filter) => filter.name).toList(growable: false),
-      },
-    );
+    DiagnosticsService.instance
+        .record('library_filters_changed', <String, Object?>{
+          'tab': _selectedTab.name,
+          'filters': next.map((filter) => filter.name).toList(growable: false),
+        });
     _libraryFiltersByTab[_selectedTab] = next;
     _libraryDataEngine.invalidateQueries();
     notifyListeners();
@@ -467,15 +465,12 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     _localSongs = snapshot.visibleAudioTracks;
     _folders = snapshot.folders;
     _lastLibraryOverlayRevision = _playlistManager.libraryOverlayRevision;
-    DiagnosticsService.instance.endSpan(
-      diagnosticsSpan,
-      'complete',
-      <String, Object?>{
-        'visibleTrackCount': _localSongs.length,
-        'hiddenTrackCount': hiddenIds.length,
-        'folderCount': _folders.length,
-      },
-    );
+    DiagnosticsService.instance
+        .endSpan(diagnosticsSpan, 'complete', <String, Object?>{
+          'visibleTrackCount': _localSongs.length,
+          'hiddenTrackCount': hiddenIds.length,
+          'folderCount': _folders.length,
+        });
   }
 
   Future<void> addToQueue(MediaTrack track) {
@@ -594,9 +589,10 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
         'initialIndex': initialIndex,
       },
     );
-    final selectedTrack = tracks.isEmpty
-        ? null
-        : tracks[initialIndex.clamp(0, tracks.length - 1)];
+    final selectedTrack =
+        tracks.isEmpty
+            ? null
+            : tracks[initialIndex.clamp(0, tracks.length - 1)];
     if (_errorMessage != null) {
       _errorMessage = null;
       notifyListeners();
@@ -637,13 +633,11 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     } else {
       await _audioHandler.play();
     }
-    DiagnosticsService.instance.record(
-      'playback_toggle_completed',
-      <String, Object?>{
-        'isPlaying': _audioHandler.player.playing,
-        'trackId': _audioHandler.activeTrack?.id,
-      },
-    );
+    DiagnosticsService.instance
+        .record('playback_toggle_completed', <String, Object?>{
+          'isPlaying': _audioHandler.player.playing,
+          'trackId': _audioHandler.activeTrack?.id,
+        });
   }
 
   Future<void> toggleRepeat() async {

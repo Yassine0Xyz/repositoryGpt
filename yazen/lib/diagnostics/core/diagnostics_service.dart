@@ -124,9 +124,10 @@ class DiagnosticsService {
   int get artworkDiskMisses => _artworkDiskMisses;
   int get artworkGateRejected => _artworkGateRejected;
   int get artworkFirstFramesVisible => _artworkFirstFramesVisible;
-  double get averageArtworkTimeToVisibleMs => _artworkFirstFramesVisible == 0
-      ? 0
-      : _artworkVisibleTotalUs / _artworkFirstFramesVisible / 1000;
+  double get averageArtworkTimeToVisibleMs =>
+      _artworkFirstFramesVisible == 0
+          ? 0
+          : _artworkVisibleTotalUs / _artworkFirstFramesVisible / 1000;
   int get maxArtworkTimeToVisibleMs => _artworkVisibleMaxUs ~/ 1000;
   int get libraryQuerySpans => _libraryQuerySpans;
   int get libraryTransformSpans => _libraryTransformSpans;
@@ -140,9 +141,10 @@ class DiagnosticsService {
   double get averageSampledRecordCostUs =>
       _recordCostSamples == 0 ? 0 : _recordCostTotalUs / _recordCostSamples;
   int get maxSampledRecordCostUs => _recordCostMaxUs;
-  double get averageJournalDrainCostUs => _journalDrainBatches == 0
-      ? 0
-      : _journalDrainTotalUs / _journalDrainBatches;
+  double get averageJournalDrainCostUs =>
+      _journalDrainBatches == 0
+          ? 0
+          : _journalDrainTotalUs / _journalDrainBatches;
   int get maxJournalDrainCostUs => _journalDrainMaxUs;
   int get sessionMilliseconds => _sessionClock.elapsedMilliseconds;
   int get elapsedMicroseconds => _sessionClock.elapsedMicroseconds;
@@ -533,9 +535,10 @@ class DiagnosticsService {
     final now = _sessionClock.elapsedMicroseconds;
     final session = _activeScrolls['$axis:$depth'];
     final elapsed = session == null ? null : now - session.lastUs;
-    final velocity = (elapsed != null && elapsed > 0 && session != null)
-        ? ((pixels - session.lastPixels) / elapsed * 1000000)
-        : null;
+    final velocity =
+        (elapsed != null && elapsed > 0 && session != null)
+            ? ((pixels - session.lastPixels) / elapsed * 1000000)
+            : null;
     if (session != null) {
       session.lastUs = now;
       session.lastPixels = pixels;
@@ -548,9 +551,10 @@ class DiagnosticsService {
       'maxExtent': maxExtent,
       'velocityPixelsPerSecond': velocity,
       'intervalUs': elapsed,
-      'startToFirstUpdateUs': session != null && session.moveCount == 0
-          ? now - session.startUs
-          : null,
+      'startToFirstUpdateUs':
+          session != null && session.moveCount == 0
+              ? now - session.startUs
+              : null,
     }, session?.traceId);
     if (session != null) session.moveCount++;
   }
@@ -569,9 +573,10 @@ class DiagnosticsService {
       'pixels': pixels,
       'maxExtent': maxExtent,
       'updateCount': session?.moveCount,
-      'durationUs': session == null
-          ? null
-          : _sessionClock.elapsedMicroseconds - session.startUs,
+      'durationUs':
+          session == null
+              ? null
+              : _sessionClock.elapsedMicroseconds - session.startUs,
     }, session?.traceId);
   }
 
@@ -681,8 +686,8 @@ class DiagnosticsService {
       final build = timing.buildDuration.inMicroseconds;
       final raster = timing.rasterDuration.inMicroseconds;
       final vsync = timing.vsyncOverhead.inMicroseconds;
-      final budgetUs = (1000000 / (_refreshRateHz <= 0 ? 60 : _refreshRateHz))
-          .round();
+      final budgetUs =
+          (1000000 / (_refreshRateHz <= 0 ? 60 : _refreshRateHz)).round();
       _frameCount++;
       _totalFrameMicros += total;
       _totalBuildMicros += build;
@@ -695,9 +700,10 @@ class DiagnosticsService {
       if (_recentFrameMicros.length > _recentFrameLimit)
         _recentFrameMicros.removeFirst();
       final elapsed = _sessionClock.elapsedMicroseconds;
-      final gap = _lastFrameElapsedMicros == 0
-          ? null
-          : elapsed - _lastFrameElapsedMicros;
+      final gap =
+          _lastFrameElapsedMicros == 0
+              ? null
+              : elapsed - _lastFrameElapsedMicros;
       _lastFrameElapsedMicros = elapsed;
       // Every Flutter frame is journaled; slow frames are not the only useful evidence.
       record('frame_timing', <String, Object?>{
@@ -841,14 +847,14 @@ class DiagnosticsService {
     'diagnosticsOverhead': <String, Object?>{
       'recordCostSampleEveryNEvents': 64,
       'recordCostSamples': _recordCostSamples,
-      'averageSampledRecordCostUs': _recordCostSamples == 0
-          ? 0
-          : _recordCostTotalUs / _recordCostSamples,
+      'averageSampledRecordCostUs':
+          _recordCostSamples == 0 ? 0 : _recordCostTotalUs / _recordCostSamples,
       'maxSampledRecordCostUs': _recordCostMaxUs,
       'journalDrainBatches': _journalDrainBatches,
-      'averageJournalDrainCostUs': _journalDrainBatches == 0
-          ? 0
-          : _journalDrainTotalUs / _journalDrainBatches,
+      'averageJournalDrainCostUs':
+          _journalDrainBatches == 0
+              ? 0
+              : _journalDrainTotalUs / _journalDrainBatches,
       'maxJournalDrainCostUs': _journalDrainMaxUs,
     },
     'journalPending': _pendingJournalLines.length,
@@ -956,12 +962,13 @@ class DiagnosticsService {
         ':',
         '-',
       );
-      final analysis = snapshotFile == null
-          ? <String, Object?>{
-              'status': 'journal_snapshot_unavailable',
-              'error': _journalError ?? 'No journal file was created.',
-            }
-          : await _buildAnalysisFromJournal(snapshotFile);
+      final analysis =
+          snapshotFile == null
+              ? <String, Object?>{
+                'status': 'journal_snapshot_unavailable',
+                'error': _journalError ?? 'No journal file was created.',
+              }
+              : await _buildAnalysisFromJournal(snapshotFile);
       final metadata = <String, Object?>{
         'schemaVersion': 2,
         'product': 'YAZEN Performance Intelligence',
@@ -970,14 +977,17 @@ class DiagnosticsService {
         'exportBoundarySequence': snapshotSequence,
         'summary': summary,
         'finalResourceSnapshot': resources,
-        'resourceSnapshotCountInJournal': analysis['eventTypeCounts'] is Map
-            ? ((analysis['eventTypeCounts'] as Map)['resource_snapshot'] ?? 0)
-            : 0,
+        'resourceSnapshotCountInJournal':
+            analysis['eventTypeCounts'] is Map
+                ? ((analysis['eventTypeCounts'] as Map)['resource_snapshot'] ??
+                    0)
+                : 0,
         'journal': <String, Object?>{
           'format': 'JSONL',
-          'file': snapshotFile?.uri.pathSegments.isNotEmpty == true
-              ? snapshotFile!.uri.pathSegments.last
-              : null,
+          'file':
+              snapshotFile?.uri.pathSegments.isNotEmpty == true
+                  ? snapshotFile!.uri.pathSegments.last
+                  : null,
           'eventsObserved': snapshotObservedCount,
           'eventsQueued': snapshotQueuedCount,
           'eventsPersisted': snapshotEventCount,
@@ -1028,13 +1038,11 @@ class DiagnosticsService {
       }
       if (snapshotFile != null) {
         try {
-          final journalResult = await _native.invokeMethod<String>(
-            'exportDiagnosticJournal',
-            <String, String>{
-              'sourcePath': snapshotFile.path,
-              'fileName': 'yazen-pi-session-$stamp.jsonl',
-            },
-          );
+          final journalResult = await _native
+              .invokeMethod<String>('exportDiagnosticJournal', <String, String>{
+                'sourcePath': snapshotFile.path,
+                'fileName': 'yazen-pi-session-$stamp.jsonl',
+              });
           if (journalResult != null) saved.add(journalResult);
           await snapshotFile.delete();
         } catch (error) {
@@ -1086,11 +1094,10 @@ class DiagnosticsService {
 
     if (journal != null && await journal.exists()) {
       try {
-        await for (final line
-            in journal
-                .openRead()
-                .transform(utf8.decoder)
-                .transform(const LineSplitter())) {
+        await for (final line in journal
+            .openRead()
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())) {
           if (line.trim().isEmpty) continue;
           try {
             final decoded = jsonDecode(line);
@@ -1112,9 +1119,10 @@ class DiagnosticsService {
             final type = decoded['type']?.toString() ?? 'unknown';
             eventTypeCounts[type] = (eventTypeCounts[type] ?? 0) + 1;
             final route = decoded['route']?.toString() ?? 'unknown';
-            final data = decoded['data'] is Map
-                ? (decoded['data'] as Map).cast<String, Object?>()
-                : const <String, Object?>{};
+            final data =
+                decoded['data'] is Map
+                    ? (decoded['data'] as Map).cast<String, Object?>()
+                    : const <String, Object?>{};
             if (type == 'frame_timing') {
               final totalUs = data['totalUs'];
               if (totalUs is num) frameDurations.add(totalUs.round());
@@ -1205,22 +1213,20 @@ class DiagnosticsService {
       }
     }
 
-    final correlated =
-        activeSpanFrameCounts.entries
-            .map(
-              (entry) => <String, Object?>{
-                'operation': entry.key,
-                'overBudgetFramesDuringOperation': entry.value,
-                'classification': 'correlated_only',
-                'confidence': 'medium',
-              },
-            )
-            .toList(growable: false)
-          ..sort(
-            (a, b) => (b['overBudgetFramesDuringOperation'] as int).compareTo(
-              a['overBudgetFramesDuringOperation'] as int,
-            ),
-          );
+    final correlated = activeSpanFrameCounts.entries
+      .map(
+        (entry) => <String, Object?>{
+          'operation': entry.key,
+          'overBudgetFramesDuringOperation': entry.value,
+          'classification': 'correlated_only',
+          'confidence': 'medium',
+        },
+      )
+      .toList(growable: false)..sort(
+      (a, b) => (b['overBudgetFramesDuringOperation'] as int).compareTo(
+        a['overBudgetFramesDuringOperation'] as int,
+      ),
+    );
 
     final operationSummary = <String, Object?>{};
     for (final entry in operationDurations.entries) {
@@ -1234,28 +1240,30 @@ class DiagnosticsService {
       };
     }
 
-    final velocitySummary = scrollVelocities.isEmpty
-        ? null
-        : <String, Object?>{
-            'sampleCount': scrollVelocities.length,
-            'averageAbsolutePixelsPerSecond':
-                scrollVelocities.map((v) => v.abs()).reduce((a, b) => a + b) /
-                scrollVelocities.length,
-            'maxAbsolutePixelsPerSecond': scrollVelocities
-                .map((v) => v.abs())
-                .reduce((a, b) => a > b ? a : b),
-          };
-    final pointerVelocitySummary = pointerVelocities.isEmpty
-        ? null
-        : <String, Object?>{
-            'axisVelocitySamples': pointerVelocities.length,
-            'averageAbsolutePixelsPerSecond':
-                pointerVelocities.reduce((a, b) => a + b) /
-                pointerVelocities.length,
-            'maxAbsolutePixelsPerSecond': pointerVelocities.reduce(
-              (a, b) => a > b ? a : b,
-            ),
-          };
+    final velocitySummary =
+        scrollVelocities.isEmpty
+            ? null
+            : <String, Object?>{
+              'sampleCount': scrollVelocities.length,
+              'averageAbsolutePixelsPerSecond':
+                  scrollVelocities.map((v) => v.abs()).reduce((a, b) => a + b) /
+                  scrollVelocities.length,
+              'maxAbsolutePixelsPerSecond': scrollVelocities
+                  .map((v) => v.abs())
+                  .reduce((a, b) => a > b ? a : b),
+            };
+    final pointerVelocitySummary =
+        pointerVelocities.isEmpty
+            ? null
+            : <String, Object?>{
+              'axisVelocitySamples': pointerVelocities.length,
+              'averageAbsolutePixelsPerSecond':
+                  pointerVelocities.reduce((a, b) => a + b) /
+                  pointerVelocities.length,
+              'maxAbsolutePixelsPerSecond': pointerVelocities.reduce(
+                (a, b) => a > b ? a : b,
+              ),
+            };
     final resourceSummary = <String, Object?>{};
     for (final entry in resourceValues.entries) {
       final values = entry.value;
@@ -1265,13 +1273,13 @@ class DiagnosticsService {
         'maximum': values.reduce((a, b) => a > b ? a : b),
       };
     }
-    final topThreads = threadCpuTickTotals.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final topThreads =
+        threadCpuTickTotals.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
 
     return <String, Object?>{
-      'status': journal == null
-          ? 'journal_unavailable'
-          : 'complete_journal_scan',
+      'status':
+          journal == null ? 'journal_unavailable' : 'complete_journal_scan',
       'eventsRead': totalEventsRead,
       'malformedLines': malformedLines,
       'missingSequenceNumbers': missingSequenceNumbers,
@@ -1296,14 +1304,16 @@ class DiagnosticsService {
         'pointerAxisVelocity': pointerVelocitySummary,
         'scrollGestureDurationMs': <String, Object?>{
           'count': scrollDurationsUs.length,
-          'average': scrollDurationsUs.isEmpty
-              ? null
-              : scrollDurationsUs.reduce((a, b) => a + b) /
-                    scrollDurationsUs.length /
-                    1000,
-          'maximum': scrollDurationsUs.isEmpty
-              ? null
-              : scrollDurationsUs.reduce((a, b) => a > b ? a : b) / 1000,
+          'average':
+              scrollDurationsUs.isEmpty
+                  ? null
+                  : scrollDurationsUs.reduce((a, b) => a + b) /
+                      scrollDurationsUs.length /
+                      1000,
+          'maximum':
+              scrollDurationsUs.isEmpty
+                  ? null
+                  : scrollDurationsUs.reduce((a, b) => a > b ? a : b) / 1000,
         },
       },
       'resourceAnalysis': resourceSummary,
@@ -1336,55 +1346,60 @@ class DiagnosticsService {
   String _buildMarkdownReport(Map<String, Object?> metadata) {
     final summary = (metadata['summary'] as Map).cast<String, Object?>();
     final analysis = (metadata['analysis'] as Map).cast<String, Object?>();
-    final buffer = StringBuffer()
-      ..writeln('# YAZEN Performance Intelligence — Session Report')
-      ..writeln()
-      ..writeln('- Session: `${_sessionId}`')
-      ..writeln('- Generated: `${metadata['generatedAt']}`')
-      ..writeln(
-        '- Journal events observed: `${summary['journalEventsObserved']}`',
-      )
-      ..writeln(
-        '- Journal events persisted: `${summary['journalEventsPersisted']}`',
-      )
-      ..writeln(
-        '- Journal events dropped: `${summary['journalEventsDropped']}`',
-      )
-      ..writeln()
-      ..writeln('## Frame performance')
-      ..writeln('- Refresh rate: ${summary['refreshRateHz']} Hz')
-      ..writeln('- Frame budget: ${summary['frameBudgetMs']} ms')
-      ..writeln('- Frames: ${summary['frameCount']}')
-      ..writeln('- Average frame: ${summary['averageFrameMs']} ms')
-      ..writeln(
-        '- Percentiles (recent window): ${summary['recentFramePercentilesMs']}',
-      )
-      ..writeln('- Over budget: ${summary['framesOverBudget']}')
-      ..writeln('- Over double budget: ${summary['framesOverDoubleBudget']}')
-      ..writeln()
-      ..writeln('## Interaction capture')
-      ..writeln('- Scroll sessions: ${summary['scrollSessions']}')
-      ..writeln('- Scroll updates: ${summary['scrollUpdates']}')
-      ..writeln('- Pointer sessions: ${summary['pointerSessions']}')
-      ..writeln('- Pointer move samples: ${summary['pointerMoves']}')
-      ..writeln()
-      ..writeln('## Resource metrics')
-      ..writeln('- Peak PSS: ${summary['peakProcessPssKb']} KB')
-      ..writeln('- Peak Java heap: ${summary['peakJavaHeapUsedBytes']} bytes')
-      ..writeln(
-        '- Average sampled process CPU: ${summary['averageProcessCpuPercent']}%',
-      )
-      ..writeln()
-      ..writeln('## Correlation analysis')
-      ..writeln(const JsonEncoder.withIndent('  ').convert(analysis))
-      ..writeln()
-      ..writeln('## Completeness')
-      ..writeln('- Journal ready: $_journalReady')
-      ..writeln('- Journal error: ${_journalError ?? 'none'}')
-      ..writeln('- Dropped event count: $_journalDroppedCount')
-      ..writeln(
-        '- The companion JSONL file contains the ordered raw event stream.',
-      );
+    final buffer =
+        StringBuffer()
+          ..writeln('# YAZEN Performance Intelligence — Session Report')
+          ..writeln()
+          ..writeln('- Session: `${_sessionId}`')
+          ..writeln('- Generated: `${metadata['generatedAt']}`')
+          ..writeln(
+            '- Journal events observed: `${summary['journalEventsObserved']}`',
+          )
+          ..writeln(
+            '- Journal events persisted: `${summary['journalEventsPersisted']}`',
+          )
+          ..writeln(
+            '- Journal events dropped: `${summary['journalEventsDropped']}`',
+          )
+          ..writeln()
+          ..writeln('## Frame performance')
+          ..writeln('- Refresh rate: ${summary['refreshRateHz']} Hz')
+          ..writeln('- Frame budget: ${summary['frameBudgetMs']} ms')
+          ..writeln('- Frames: ${summary['frameCount']}')
+          ..writeln('- Average frame: ${summary['averageFrameMs']} ms')
+          ..writeln(
+            '- Percentiles (recent window): ${summary['recentFramePercentilesMs']}',
+          )
+          ..writeln('- Over budget: ${summary['framesOverBudget']}')
+          ..writeln(
+            '- Over double budget: ${summary['framesOverDoubleBudget']}',
+          )
+          ..writeln()
+          ..writeln('## Interaction capture')
+          ..writeln('- Scroll sessions: ${summary['scrollSessions']}')
+          ..writeln('- Scroll updates: ${summary['scrollUpdates']}')
+          ..writeln('- Pointer sessions: ${summary['pointerSessions']}')
+          ..writeln('- Pointer move samples: ${summary['pointerMoves']}')
+          ..writeln()
+          ..writeln('## Resource metrics')
+          ..writeln('- Peak PSS: ${summary['peakProcessPssKb']} KB')
+          ..writeln(
+            '- Peak Java heap: ${summary['peakJavaHeapUsedBytes']} bytes',
+          )
+          ..writeln(
+            '- Average sampled process CPU: ${summary['averageProcessCpuPercent']}%',
+          )
+          ..writeln()
+          ..writeln('## Correlation analysis')
+          ..writeln(const JsonEncoder.withIndent('  ').convert(analysis))
+          ..writeln()
+          ..writeln('## Completeness')
+          ..writeln('- Journal ready: $_journalReady')
+          ..writeln('- Journal error: ${_journalError ?? 'none'}')
+          ..writeln('- Dropped event count: $_journalDroppedCount')
+          ..writeln(
+            '- The companion JSONL file contains the ordered raw event stream.',
+          );
     return buffer.toString();
   }
 

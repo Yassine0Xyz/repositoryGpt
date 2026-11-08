@@ -62,14 +62,16 @@ class TrackListTile extends StatelessWidget {
       // Material paints the row surface and ink feedback together. This
       // replaces the previous decorated Container + transparent Material pair.
       child: Material(
-        color: isCurrentTrack
-            ? tokens.accent.withValues(alpha: 0.045)
-            : Colors.transparent,
+        color:
+            isCurrentTrack
+                ? tokens.accent.withValues(alpha: 0.045)
+                : Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: rowRadius,
-          side: isCurrentTrack
-              ? BorderSide(color: tokens.accent.withValues(alpha: 0.12))
-              : BorderSide.none,
+          side:
+              isCurrentTrack
+                  ? BorderSide(color: tokens.accent.withValues(alpha: 0.12))
+                  : BorderSide.none,
         ),
         child: InkWell(
           borderRadius: rowRadius,
