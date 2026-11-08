@@ -65,6 +65,12 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get 2>&1 | tee artifacts/pub-get.log
 
+      - name: Install FFmpeg for Linux media tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --yes --no-install-recommends ffmpeg > artifacts/ffmpeg-install.log 2>&1
+          ffmpeg -version > artifacts/ffmpeg-version.log 2>&1
+
       - name: Format Dart sources and verify clean formatting
         run: |
           dart format lib test 2>&1 | tee artifacts/dart-format.log
