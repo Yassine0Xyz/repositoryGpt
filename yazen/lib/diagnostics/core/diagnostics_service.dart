@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'dart:ui' show FrameTiming, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -866,7 +867,7 @@ class DiagnosticsService {
       'processCpuPercentSincePreviousSnapshot',
     ),
     'resourceSnapshotCount': _resourceSnapshots.length,
-    'artworkPipeline': <String, int>{
+    'artworkPipeline': <String, Object?>{
       'loadsStarted': _artworkLoadsStarted,
       'loadsCompleted': _artworkLoadsCompleted,
       'loadsFailed': _artworkLoadsFailed,
@@ -899,7 +900,7 @@ class DiagnosticsService {
     var snapshotDroppedCount = 0;
     var snapshotSequence = 0;
     var snapshotPauseCount = 0;
-    Map<String, Object?>? summaryAtBoundary;
+    late final Map<String, Object?> summaryAtBoundary;
     try {
       await _journalInitialization;
       await _capturePeriodicResourceSnapshot();
@@ -949,7 +950,7 @@ class DiagnosticsService {
       unawaited(_flushAllJournal());
 
       final resources = await _resourceSnapshot(includeStorage: true);
-      final summary = summaryAtBoundary ?? _summary();
+      final summary = summaryAtBoundary;
       summary['journalEventsObserved'] = snapshotObservedCount;
       summary['journalEventsQueued'] = snapshotQueuedCount;
       summary['journalEventsPersisted'] = snapshotEventCount;
@@ -1107,11 +1108,11 @@ class DiagnosticsService {
             if (sequence is num) {
               final currentSequence = sequence.toInt();
               if (previousSequence != null &&
-                  currentSequence > previousSequence! + 1) {
+                  currentSequence > previousSequence + 1) {
                 missingSequenceNumbers +=
-                    currentSequence - previousSequence! - 1;
+                    currentSequence - previousSequence - 1;
               } else if (previousSequence != null &&
-                  currentSequence <= previousSequence!) {
+                  currentSequence <= previousSequence) {
                 outOfOrderEvents++;
               }
               previousSequence = currentSequence;
