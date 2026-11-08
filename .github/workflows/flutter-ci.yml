@@ -41,8 +41,11 @@ jobs:
           mkdir -p artifacts
           test -n "$ANDROID_HOME"
           test -d "$ANDROID_HOME"
-          command -v sdkmanager | tee artifacts/sdkmanager-path.log
-          sdkmanager --list_installed 2>&1 | tee artifacts/android-sdk-packages.log
+          sdkmanager_path="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          test -x "$sdkmanager_path"
+          printf '%s\n' "$(dirname "$sdkmanager_path")" >> "$GITHUB_PATH"
+          printf '%s\n' "$sdkmanager_path" | tee artifacts/sdkmanager-path.log
+          "$sdkmanager_path" --list_installed 2>&1 | tee artifacts/android-sdk-packages.log
 
       - name: Set up stable Flutter
         uses: subosito/flutter-action@v2
