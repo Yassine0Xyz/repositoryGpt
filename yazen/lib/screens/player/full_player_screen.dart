@@ -2127,38 +2127,41 @@ class _SheetSurface extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Container(
-              width: 42,
-              height: 4,
-              decoration: BoxDecoration(
-                color: tokens.textSecondary.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(99),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: tokens.textSecondary.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(99),
+                ),
               ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: <Widget>[
-                Icon(icon, color: tokens.accent),
-                const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            child,
-          ],
+              const SizedBox(height: 14),
+              Row(
+                children: <Widget>[
+                  Icon(icon, color: tokens.accent),
+                  const SizedBox(width: 10),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              child,
+            ],
+          ),
         ),
       ),
     );

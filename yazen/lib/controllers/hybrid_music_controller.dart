@@ -91,6 +91,7 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
   List<PlaylistModel> _playlists = const <PlaylistModel>[];
   List<String> _folders = const <String>[];
   bool _isLoading = false;
+  bool _libraryLoadInProgress = false;
   final Map<LibraryTab, LibrarySort> _librarySortByTab =
       <LibraryTab, LibrarySort>{
         LibraryTab.songs: LibrarySort.newestFirst,
@@ -223,6 +224,8 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
   }) async {
     // A refresh should publish its replacement snapshot atomically while the
     // current list stays visible. Initial loading still uses the loading state.
+    _libraryLoadInProgress = true;
+    var shouldLoadSecondaryCatalogs = false;
     if (!preserveCurrentLibrary) _setLoading(true);
     final loadGeneration = ++_libraryLoadGeneration;
     // Any in-flight secondary catalog query belongs to the previous scan.
@@ -267,25 +270,35 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
       _playlists = const <PlaylistModel>[];
       _secondaryLibraryLoaded = false;
       _rebuildLibraryDerivedLists();
-      unawaited(_loadSecondaryLibraryData(loadGeneration));
+      shouldLoadSecondaryCatalogs = true;
     } catch (error) {
       if (loadGeneration == _libraryLoadGeneration) {
         _errorMessage = 'Unable to read the device music library: $error';
       }
     } finally {
-      if (!preserveCurrentLibrary) {
-        _setLoading(false);
-        if (_refreshQueuedDuringLoad) {
-          _refreshQueuedDuringLoad = false;
-          unawaited(refreshLibrary());
-        }
+      _libraryLoadInProgress = false;
+      var refreshQueued = false;
+      if (!preserveCurrentLibrary) _setLoading(false);
+      if (_refreshQueuedDuringLoad) {
+        _refreshQueuedDuringLoad = false;
+        refreshQueued = true;
+      }
+      if (refreshQueued) {
+        unawaited(refreshLibrary());
+      } else if (shouldLoadSecondaryCatalogs &&
+          !_disposed &&
+          loadGeneration == _libraryLoadGeneration &&
+          !_permissionRequired) {
+        // Start secondary catalogs only after the primary Songs result has
+        // been published and the initial loading state has been cleared.
+        unawaited(_loadSecondaryLibraryData(loadGeneration));
       }
       notifyListeners();
     }
   }
 
   Future<void> refreshLibrary() async {
-    if (_isLoading) {
+    if (_isLoading || _libraryLoadInProgress) {
       _refreshQueuedDuringLoad = true;
       return;
     }
@@ -301,9 +314,17 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     await loadLibrary(requestPermission: false, preserveCurrentLibrary: true);
   }
 
+  Future<void> _yieldForCatalogFrame({int fallbackMilliseconds = 100}) =>
+      Future.any<void>(<Future<void>>[
+        WidgetsBinding.instance.endOfFrame,
+        Future<void>.delayed(Duration(milliseconds: fallbackMilliseconds)),
+      ]);
+
   Future<void> _loadSecondaryLibraryData([int? requestedGeneration]) async {
     final generation = requestedGeneration ?? _libraryLoadGeneration;
     if (_disposed ||
+        _libraryLoadInProgress ||
+        _permissionRequired ||
         generation != _libraryLoadGeneration ||
         _secondaryLibraryLoaded) {
       return;
@@ -311,23 +332,118 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     if (_secondaryLibraryLoading) return;
     _secondaryLibraryLoading = true;
     final secondaryGeneration = _secondaryLibraryGeneration;
+    final catalogSpan = DiagnosticsService.instance.startSpan(
+      'library_secondary_catalog_pipeline',
+      data: <String, Object?>{'selectedTab': _selectedTab.name},
+    );
+    var completedCatalogs = 0;
     try {
-      final results = await Future.wait<dynamic>(<Future<dynamic>>[
-        _library.queryArtists(),
-        _library.queryAlbums(),
-        _library.queryPlaylists(),
-      ]);
+      // Let the first Songs frame render before the larger secondary
+      // MediaStore payloads are decoded on the platform channel.
+      await _yieldForCatalogFrame(fallbackMilliseconds: 120);
       if (_disposed ||
+          _libraryLoadInProgress ||
           generation != _libraryLoadGeneration ||
           secondaryGeneration != _secondaryLibraryGeneration) {
+        DiagnosticsService.instance.endSpan(
+          catalogSpan,
+          'superseded',
+          <String, Object?>{
+            'reason': 'library_generation_changed_or_initial_load_active',
+          },
+        );
         return;
       }
-      _artists = results[0] as List<ArtistModel>;
-      _albums = results[1] as List<AlbumModel>;
-      _playlists = results[2] as List<PlaylistModel>;
+
+      // Do not complete three large MethodChannel responses simultaneously.
+      // Loading and publishing one catalog at a time lowers peak decode and
+      // allocation pressure while keeping each catalog independently usable.
+      final order = <LibraryTab>[
+            _selectedTab,
+            LibraryTab.artists,
+            LibraryTab.albums,
+            LibraryTab.playlists,
+          ]
+          .where(
+            (tab) =>
+                tab == LibraryTab.artists ||
+                tab == LibraryTab.albums ||
+                tab == LibraryTab.playlists,
+          )
+          .toSet()
+          .toList(growable: false);
+
+      for (final catalog in order) {
+        if (_disposed ||
+            generation != _libraryLoadGeneration ||
+            secondaryGeneration != _secondaryLibraryGeneration) {
+          DiagnosticsService.instance.endSpan(
+            catalogSpan,
+            'superseded',
+            <String, Object?>{'completedCatalogs': completedCatalogs},
+          );
+          return;
+        }
+
+        final result = switch (catalog) {
+          LibraryTab.artists => await _library.queryArtists(),
+          LibraryTab.albums => await _library.queryAlbums(),
+          LibraryTab.playlists => await _library.queryPlaylists(),
+          _ => null,
+        };
+        // A refresh may supersede this query while the platform channel is
+        // returning. Discard the stale payload before assigning or notifying.
+        if (_disposed ||
+            generation != _libraryLoadGeneration ||
+            secondaryGeneration != _secondaryLibraryGeneration) {
+          DiagnosticsService.instance.endSpan(
+            catalogSpan,
+            'superseded',
+            <String, Object?>{'completedCatalogs': completedCatalogs},
+          );
+          return;
+        }
+        switch (catalog) {
+          case LibraryTab.artists:
+            _artists = result as List<ArtistModel>;
+            break;
+          case LibraryTab.albums:
+            _albums = result as List<AlbumModel>;
+            break;
+          case LibraryTab.playlists:
+            _playlists = result as List<PlaylistModel>;
+            break;
+          default:
+            continue;
+        }
+        completedCatalogs++;
+        DiagnosticsService.instance
+            .record('library_catalog_published', <String, Object?>{
+              'catalog': catalog.name,
+              'itemCount': switch (catalog) {
+                LibraryTab.artists => _artists.length,
+                LibraryTab.albums => _albums.length,
+                LibraryTab.playlists => _playlists.length,
+                _ => 0,
+              },
+              'completedCatalogs': completedCatalogs,
+            });
+        notifyListeners();
+        // Give the UI a chance to paint between catalog payloads.
+        await _yieldForCatalogFrame(fallbackMilliseconds: 60);
+      }
       _secondaryLibraryLoaded = true;
-      notifyListeners();
-    } catch (_) {
+      DiagnosticsService.instance.endSpan(
+        catalogSpan,
+        'complete',
+        <String, Object?>{'completedCatalogs': completedCatalogs},
+      );
+    } catch (error) {
+      DiagnosticsService.instance
+          .endSpan(catalogSpan, 'failed', <String, Object?>{
+            'completedCatalogs': completedCatalogs,
+            'errorType': error.runtimeType.toString(),
+          });
       // Secondary catalogs are optional; the Songs tab remains usable.
     } finally {
       _secondaryLibraryLoading = false;
@@ -661,9 +777,10 @@ class HybridMusicController extends ChangeNotifier with WidgetsBindingObserver {
     );
     _selectedTab = tab;
     notifyListeners();
-    if (tab == LibraryTab.artists ||
-        tab == LibraryTab.albums ||
-        tab == LibraryTab.playlists) {
+    if (!_libraryLoadInProgress &&
+        (tab == LibraryTab.artists ||
+            tab == LibraryTab.albums ||
+            tab == LibraryTab.playlists)) {
       unawaited(_loadSecondaryLibraryData());
     }
     if (tab == LibraryTab.videos) {

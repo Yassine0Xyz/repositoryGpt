@@ -694,7 +694,7 @@ class _SettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: tokens.divider),
       ),
-      child: child,
+      child: Material(color: Colors.transparent, child: child),
     );
   }
 }

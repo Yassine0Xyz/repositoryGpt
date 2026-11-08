@@ -1,10 +1,10 @@
-name: YAZEN Player Diagnostics CI
+name: YAZEN PI V1.2 Profile Validation
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - integration/yazen-pi-v1.2
   pull_request:
     branches:
       - main
@@ -12,10 +12,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: yazen-pi-v1.2-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: yazen
@@ -23,39 +27,77 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: yazen/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up stable Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.8
           channel: stable
           cache: true
 
-      - name: Print Flutter and Dart versions
+      - name: Print toolchain versions
         run: |
-          flutter --version
-          dart --version
+          mkdir -p artifacts
+          flutter --version 2>&1 | tee artifacts/flutter-version.log
+          dart --version 2>&1 | tee artifacts/dart-version.log
+          java -version 2>&1 | tee artifacts/java-version.log
+          sdkmanager --list_installed 2>&1 | tee artifacts/android-sdk-packages.log
 
       - name: Resolve dependencies
-        run: flutter pub get
+        run: flutter pub get 2>&1 | tee artifacts/pub-get.log
 
-      - name: Verify Dart formatting
-        run: dart format --output=none --set-exit-if-changed .
+      - name: Format Dart sources and verify clean formatting
+        run: |
+          dart format lib test 2>&1 | tee artifacts/dart-format.log
+          dart format --output=none --set-exit-if-changed lib test 2>&1 | tee artifacts/dart-format-check.log
+          git diff --exit-code -- lib test
 
-      - name: Validate temporary diagnostics wiring
-        run: python3 tool/validate_temp_diagnostics.py
+      - name: Run source guardrails
+        run: |
+          python3 tool/validate_pi_source_fixes.py 2>&1 | tee artifacts/guardrails-pi-v1.log
+          python3 tool/validate_temp_diagnostics.py 2>&1 | tee artifacts/guardrails-diagnostics.log
+          python3 tool/validate_v5_performance.py 2>&1 | tee artifacts/guardrails-v5.log
+          python3 tool/validate_v6_ui_performance.py 2>&1 | tee artifacts/guardrails-v6.log
+          python3 tool/validate_library_evolution_v1.py 2>&1 | tee artifacts/guardrails-library.log
+          python3 tool/validate_pi_v1_2.py 2>&1 | tee artifacts/guardrails-pi-v1-2.log
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze 2>&1 | tee artifacts/flutter-analyze.log
 
-      - name: Run tests
-        run: flutter test
+      - name: Run all Flutter tests
+        run: flutter test 2>&1 | tee artifacts/flutter-test.log
 
-      - name: Build Android debug APK
-        run: flutter build apk --debug --target-platform android-arm64
+      - name: Build Profile APK
+        id: profile_build
+        run: flutter build apk --profile 2>&1 | tee artifacts/profile-build.log
 
-      - name: Upload Android debug APK
+      - name: Verify Profile APK and diagnostics configuration
+        run: python3 tool/validate_profile_apk.py build/app/outputs/flutter-apk/app-profile.apk 2>&1 | tee artifacts/profile-verification.log
+
+      - name: Upload Profile APK
+        if: always() && steps.profile_build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: yazen-player-debug-apk
-          path: yazen/build/app/outputs/flutter-apk/app-debug.apk
+          name: yazen-pi-v1.2-profile-apk
+          path: yazen/build/app/outputs/flutter-apk/app-profile.apk
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload logs and diagnostics reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yazen-pi-v1.2-validation-logs
+          path: yazen/artifacts/*.log
+          if-no-files-found: warn
+          retention-days: 30

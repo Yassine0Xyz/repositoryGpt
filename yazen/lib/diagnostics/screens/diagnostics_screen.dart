@@ -59,6 +59,10 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
               runSpacing: 14,
               children: <Widget>[
                 _Metric(
+                  label: 'Build mode',
+                  value: diagnostics.buildMode.toUpperCase(),
+                ),
+                _Metric(
                   label: 'Display refresh',
                   value: '${diagnostics.refreshRateHz.toStringAsFixed(0)} Hz',
                 ),
@@ -77,12 +81,12 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 _Metric(
                   label: 'P50 / P90',
                   value:
-                      '${diagnostics.p50FrameMs} / ${diagnostics.p90FrameMs} ms',
+                      '${diagnostics.p50FrameMs.toStringAsFixed(2)} / ${diagnostics.p90FrameMs.toStringAsFixed(2)} ms',
                 ),
                 _Metric(
                   label: 'P95 / P99',
                   value:
-                      '${diagnostics.p95FrameMs} / ${diagnostics.p99FrameMs} ms',
+                      '${diagnostics.p95FrameMs.toStringAsFixed(2)} / ${diagnostics.p99FrameMs.toStringAsFixed(2)} ms',
                 ),
                 _Metric(
                   label: 'Over budget',
@@ -186,9 +190,9 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                   value: '${diagnostics.artworkLoadsStarted}',
                 ),
                 _Metric(
-                  label: 'Completed / failed',
+                  label: 'Success / null / exception',
                   value:
-                      '${diagnostics.artworkLoadsCompleted} / ${diagnostics.artworkLoadsFailed}',
+                      '${diagnostics.artworkLoadsSucceeded} / ${diagnostics.artworkLoadsReturnedNull} / ${diagnostics.artworkLoadsExceptionFailed}',
                 ),
                 _Metric(
                   label: 'Memory hit / miss',
@@ -205,6 +209,21 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                   value: '${diagnostics.artworkGateRejected}',
                 ),
                 _Metric(
+                  label: 'Evicted / queue full',
+                  value:
+                      '${diagnostics.artworkGateQueueEvicted} / ${diagnostics.artworkGateQueueFull}',
+                ),
+                _Metric(
+                  label: 'Disk writes ok / skip / reject / fail',
+                  value:
+                      '${diagnostics.artworkDiskWritesSucceeded} / ${diagnostics.artworkDiskWritesSkipped} / ${diagnostics.artworkDiskWritesRejected} / ${diagnostics.artworkDiskWritesFailed}',
+                ),
+                _Metric(
+                  label: 'Disk gate evicted / queue full',
+                  value:
+                      '${diagnostics.artworkDiskWriteGateQueueEvicted} / ${diagnostics.artworkDiskWriteGateQueueFull}',
+                ),
+                _Metric(
                   label: 'First frames visible',
                   value: '${diagnostics.artworkFirstFramesVisible}',
                 ),
@@ -216,6 +235,48 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                 _Metric(
                   label: 'Active spans',
                   value: '${diagnostics.activeSpanCount}',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _sectionCard(
+            context,
+            title: 'VIDEO THUMBNAIL PIPELINE',
+            subtitle:
+                'Memory cache, deduplication, bounded decode gate and source result',
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 14,
+              children: <Widget>[
+                _Metric(
+                  label: 'Loads started',
+                  value: '${diagnostics.videoThumbnailLoadsStarted}',
+                ),
+                _Metric(
+                  label: 'Success / null / failed',
+                  value:
+                      '${diagnostics.videoThumbnailLoadsSucceeded} / ${diagnostics.videoThumbnailLoadsReturnedNull} / ${diagnostics.videoThumbnailLoadsFailed}',
+                ),
+                _Metric(
+                  label: 'Cache hit / miss',
+                  value:
+                      '${diagnostics.videoThumbnailCacheHits} / ${diagnostics.videoThumbnailCacheMisses}',
+                ),
+                _Metric(
+                  label: 'Deduplicated / gate rejected',
+                  value:
+                      '${diagnostics.videoThumbnailRequestsDeduplicated} / ${diagnostics.videoThumbnailGateRejected}',
+                ),
+                _Metric(
+                  label: 'Cache evictions / visible',
+                  value:
+                      '${diagnostics.videoThumbnailCacheEvictions} / ${diagnostics.videoThumbnailFirstFramesVisible}',
+                ),
+                _Metric(
+                  label: 'Avg / max visible',
+                  value:
+                      '${diagnostics.averageVideoThumbnailTimeToVisibleMs.toStringAsFixed(1)} / ${diagnostics.maxVideoThumbnailTimeToVisibleMs} ms',
                 ),
               ],
             ),
@@ -242,8 +303,9 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                   value: '${diagnostics.playbackActionEvents}',
                 ),
                 _Metric(
-                  label: 'Error events',
-                  value: '${diagnostics.diagnosticErrorEvents}',
+                  label: 'Framework reports / async errors / failed spans',
+                  value:
+                      '${diagnostics.flutterFrameworkReportEvents} / ${diagnostics.uncaughtAsyncErrorEvents} / ${diagnostics.failedSpanEvents}',
                 ),
               ],
             ),
@@ -301,8 +363,27 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                   value: '${diagnostics.pointerSessions}',
                 ),
                 _Metric(
+                  label: 'Pointer up / cancel',
+                  value:
+                      '${diagnostics.pointerCompleted} / ${diagnostics.pointerCancelled}',
+                ),
+                _Metric(
+                  label: 'Tap / drag / long-press candidates',
+                  value:
+                      '${diagnostics.pointerTapCandidates} / ${diagnostics.pointerDragCandidates} / ${diagnostics.pointerLongPressCandidates}',
+                ),
+                _Metric(
                   label: 'Pointer move samples',
                   value: '${diagnostics.pointerMoves}',
+                ),
+                _Metric(
+                  label: 'Scroll completed',
+                  value: '${diagnostics.scrollCompleted}',
+                ),
+                _Metric(
+                  label: 'Interrupted pointer / scroll',
+                  value:
+                      '${diagnostics.pointerInterrupted} / ${diagnostics.scrollInterrupted}',
                 ),
                 _Metric(
                   label: 'Route changes',

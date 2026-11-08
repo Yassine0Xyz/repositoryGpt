@@ -19,7 +19,11 @@ settings = (ROOT / "lib/screens/settings/settings_screen.dart").read_text()
 artwork = (ROOT / "lib/widgets/media_artwork.dart").read_text()
 media_library = (ROOT / "lib/services/media_library_service.dart").read_text()
 native = (ROOT / "android/app/src/main/kotlin/com/yassine/yazen/MainActivity.kt").read_text()
-workflow = (ROOT / ".github/workflows/flutter-ci.yml").read_text()
+workflow = (ROOT.parent / ".github/workflows/flutter-ci.yml").read_text()
+
+def compact(source):
+    return "".join(source.split())
+
 
 required = [
     ("Flutter frame timing callback", "addTimingsCallback" in service and "frame_timing" in service),
@@ -29,12 +33,12 @@ required = [
     ("full-session JSONL plus JSON and Markdown export", "jsonl" in service.lower() and "yazen-pi-session-$stamp.json" in service and "yazen-pi-session-$stamp.md" in service),
     ("session starts at app launch", "DiagnosticsService.instance.start()" in main),
     ("Settings export entry", "Export complete session" in settings),
-    ("artwork tracing, cache and first-visible timing", "startSpan( 'artwork_load'" in " ".join(artwork.split()) and "artwork_disk_cache_hit" in artwork and "artwork_first_frame_visible" in artwork),
+    ("artwork tracing, cache and first-visible timing", "startSpan('artwork_load'" in compact(artwork) and "artwork_disk_cache_hit" in artwork and "artwork_first_frame_visible" in artwork),
     ("MediaStore query tracing", "startSpan(operation)" in media_library and "endSpan(span, 'complete'" in media_library),
     ("Android process memory and CPU snapshot", "processPssKb" in native and "processCpuPercentSincePreviousSnapshot" in native and "threadCpuSamples" in native),
     ("Android Downloads journal streaming", "exportDiagnosticJournal" in native and "YAZEN Diagnostics" in native),
     ("hybrid resource sampling", "Duration(seconds: _deepInvestigation ? 1 : 5)" in service and "resourceSnapshotCountInJournal" in service),
-    ("diagnostics CI branch", "diagnostics/temp-performance-v1" in workflow),
+    ("V1.2 diagnostics CI branch", "integration/yazen-pi-v1.2" in workflow),
     ("global pointer capture", "onPointerMove: DiagnosticsService.instance.pointerMove" in " ".join(main.split()) and "onPointerSignal: DiagnosticsService.instance.pointerSignal" in " ".join(main.split())),
     ("trace correlation and full journal analysis", "activeSpanFrameCorrelations" in service and "_buildAnalysisFromJournal" in service),
     ("diagnostics overhead instrumentation", "_recordCostSamples" in service and "_journalDrainTotalUs" in service),

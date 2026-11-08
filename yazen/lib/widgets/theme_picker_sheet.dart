@@ -34,58 +34,61 @@ class _ThemePickerSheet extends StatelessWidget {
               ),
               border: Border.all(color: tokens.divider),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Center(
-                  child: Container(
-                    width: 38,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: tokens.divider,
-                      borderRadius: BorderRadius.circular(3),
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: tokens.divider,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Appearance',
-                  style: TextStyle(
-                    color: tokens.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                  const SizedBox(height: 20),
+                  Text(
+                    'Appearance',
+                    style: TextStyle(
+                      color: tokens.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'Set the atmosphere for your listening space.',
-                  style: TextStyle(color: tokens.textSecondary, fontSize: 12),
-                ),
-                const SizedBox(height: 16),
-                ...EchoThemePreset.values.map(
-                  (preset) => _ThemeOption(
-                    preset: preset,
-                    selected: theme.preset == preset,
-                    onTap: () {
-                      theme.setPreset(preset);
+                  const SizedBox(height: 5),
+                  Text(
+                    'Set the atmosphere for your listening space.',
+                    style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                  ),
+                  const SizedBox(height: 16),
+                  ...EchoThemePreset.values.map(
+                    (preset) => _ThemeOption(
+                      preset: preset,
+                      selected: theme.preset == preset,
+                      onTap: () {
+                        theme.setPreset(preset);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton.icon(
+                    onPressed: () {
+                      theme.clearCustomBackground();
                       Navigator.of(context).pop();
                     },
+                    icon: const Icon(
+                      Icons.image_not_supported_outlined,
+                      size: 18,
+                    ),
+                    label: const Text('Clear custom backdrop'),
                   ),
-                ),
-                const SizedBox(height: 4),
-                TextButton.icon(
-                  onPressed: () {
-                    theme.clearCustomBackground();
-                    Navigator.of(context).pop();
-                  },
-                  icon: const Icon(
-                    Icons.image_not_supported_outlined,
-                    size: 18,
-                  ),
-                  label: const Text('Clear custom backdrop'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

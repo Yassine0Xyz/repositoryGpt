@@ -78,6 +78,8 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
   static int _memoryCacheBytes = 0;
   static int _artworkLoadsStarted = 0;
   static int _artworkLoadsCompleted = 0;
+  static int _artworkLoadsSucceeded = 0;
+  static int _artworkLoadsReturnedNull = 0;
   static int _artworkLoadsFailed = 0;
   static int _diskCacheHits = 0;
   static int _diskCacheMisses = 0;
@@ -169,9 +171,14 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     'activeLoads': _loadGate.activeLoads,
     'queuedLoads': _loadGate.queuedLoads,
     'rejectedLoads': _loadGate.rejectedLoads,
+    'queueEvictions': _loadGate.queueEvictions,
+    'queueFullRejections': _loadGate.queueFullRejections,
     'loadsStarted': _artworkLoadsStarted,
     'loadsCompleted': _artworkLoadsCompleted,
-    'loadsFailed': _artworkLoadsFailed,
+    'loadsSucceeded': _artworkLoadsSucceeded,
+    'loadsReturnedNull': _artworkLoadsReturnedNull,
+    'loadsFailed': _artworkLoadsReturnedNull + _artworkLoadsFailed,
+    'loadsExceptionFailed': _artworkLoadsFailed,
     'diskCacheHits': _diskCacheHits,
     'diskCacheMisses': _diskCacheMisses,
   };
@@ -201,7 +208,7 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
       DiagnosticsService.instance.record(
         'artwork_memory_cache_hit',
         <String, Object?>{
-          'cacheKey': key,
+          'cacheKeyFingerprint': DiagnosticsService.diagnosticFingerprint(key),
           'pixels': pixels,
           ..._diagnosticsSnapshot(),
         },
@@ -229,36 +236,42 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     int pixels,
     bool cropContentBounds,
   ) async {
-    if (track == null && imageUri == null) return null;
+    if (track == null && imageUri == null) {
+      DiagnosticsService.instance.record(
+        'artwork_request_skipped',
+        <String, Object?>{'reason': 'missing_track_and_image_uri'},
+      );
+      return null;
+    }
     if (key != null) {
       final cached = _readCache(key);
       if (cached != null) {
-        DiagnosticsService.instance.record(
-          'artwork_memory_cache_hit',
-          <String, Object?>{
-            'cacheKey': key,
-            'pixels': pixels,
-            ..._diagnosticsSnapshot(),
-          },
-        );
+        DiagnosticsService.instance
+            .record('artwork_memory_cache_hit', <String, Object?>{
+              'cacheKeyFingerprint': DiagnosticsService.diagnosticFingerprint(
+                key,
+              ),
+              'pixels': pixels,
+              ..._diagnosticsSnapshot(),
+            });
         return cached;
       }
       final pending = _pendingLoads[key];
       if (pending != null) {
-        DiagnosticsService.instance.record(
-          'artwork_request_deduplicated',
-          <String, Object?>{
-            'cacheKey': key,
-            'pixels': pixels,
-            ..._diagnosticsSnapshot(),
-          },
-        );
+        DiagnosticsService.instance
+            .record('artwork_request_deduplicated', <String, Object?>{
+              'cacheKeyFingerprint': DiagnosticsService.diagnosticFingerprint(
+                key,
+              ),
+              'pixels': pixels,
+              ..._diagnosticsSnapshot(),
+            });
         return pending;
       }
       DiagnosticsService.instance.record(
         'artwork_memory_cache_miss',
         <String, Object?>{
-          'cacheKey': key,
+          'cacheKeyFingerprint': DiagnosticsService.diagnosticFingerprint(key),
           'pixels': pixels,
           ..._diagnosticsSnapshot(),
         },
@@ -285,8 +298,10 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
       'artwork_gate_wait',
       data: _diagnosticsSnapshot(),
     );
+    var lastRejectionReason = 'unknown';
     for (var attempt = 1; attempt <= _maxGateAcquireAttempts; attempt++) {
-      if (await _loadGate.acquire()) {
+      final result = await _loadGate.acquireWithResult();
+      if (result == LoadPermitResult.acquired) {
         DiagnosticsService.instance.endSpan(
           gateSpan,
           'complete',
@@ -294,16 +309,22 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         );
         return true;
       }
-      if (attempt < _maxGateAcquireAttempts) {
-        // Keep the retry bounded: no timer loop and no unbounded queue growth.
-        await Future<void>.delayed(_gateRetryDelay);
+      lastRejectionReason =
+          result == LoadPermitResult.queueEvicted
+              ? 'queue_evicted_by_newer_request'
+              : 'queue_capacity_unavailable';
+      if (result == LoadPermitResult.queueFull ||
+          attempt == _maxGateAcquireAttempts) {
+        break;
       }
+      // Keep the retry bounded: no timer loop and no unbounded queue growth.
+      await Future<void>.delayed(_gateRetryDelay);
     }
-    DiagnosticsService.instance.endSpan(
-      gateSpan,
-      'rejected',
-      _diagnosticsSnapshot(),
-    );
+    DiagnosticsService.instance.endSpan(gateSpan, 'rejected', <String, Object?>{
+      'reason': lastRejectionReason,
+      'attemptLimit': _maxGateAcquireAttempts,
+      ..._diagnosticsSnapshot(),
+    });
     if (kDebugMode || kProfileMode) {
       developer.log(
         'Artwork request dropped after bounded gate retry '
@@ -329,7 +350,10 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     try {
       final diskSpan = DiagnosticsService.instance.startSpan(
         'artwork_disk_cache_read',
-        data: <String, Object?>{'pixels': pixels, 'cacheKey': key},
+        data: <String, Object?>{
+          'pixels': pixels,
+          'cacheKeyFingerprint': DiagnosticsService.diagnosticFingerprint(key),
+        },
       );
       dynamic disk;
       try {
@@ -338,7 +362,7 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         DiagnosticsService.instance.endSpan(
           diskSpan,
           'failed',
-          <String, Object?>{'error': error.toString()},
+          <String, Object?>{'errorType': error.runtimeType.toString()},
         );
         rethrow;
       }
@@ -428,8 +452,11 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         'source':
             track?.isLocal == true
                 ? 'local'
-                : (imageUri == null ? 'unknown' : 'remote'),
-        'trackId': track?.id,
+                : ((track?.artworkUri != null || imageUri != null)
+                    ? 'remote'
+                    : 'unknown'),
+        'cacheKeyFingerprint':
+            key == null ? null : DiagnosticsService.diagnosticFingerprint(key),
         ..._diagnosticsSnapshot(),
       },
     );
@@ -442,16 +469,25 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         cropContentBounds,
       );
       _artworkLoadsCompleted++;
-      DiagnosticsService.instance.endSpan(
-        loadSpan,
-        'complete',
-        <String, Object?>{'success': result != null, ..._diagnosticsSnapshot()},
-      );
+      if (result != null) {
+        _artworkLoadsSucceeded++;
+      } else {
+        _artworkLoadsReturnedNull++;
+      }
+      DiagnosticsService.instance
+          .endSpan(loadSpan, 'complete', <String, Object?>{
+            'success': result != null,
+            'resultKind':
+                result == null
+                    ? 'no_artwork_or_source_unavailable'
+                    : 'artwork_ready',
+            ..._diagnosticsSnapshot(),
+          });
       return result;
     } catch (error) {
       _artworkLoadsFailed++;
       DiagnosticsService.instance.endSpan(loadSpan, 'failed', <String, Object?>{
-        'error': error.toString(),
+        'errorType': error.runtimeType.toString(),
         ..._diagnosticsSnapshot(),
       });
       rethrow;
@@ -460,7 +496,8 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
           (_artworkLoadsCompleted + _artworkLoadsFailed) % 32 == 0) {
         developer.log(
           'Artwork metrics: started=$_artworkLoadsStarted, '
-          'completed=$_artworkLoadsCompleted, failed=$_artworkLoadsFailed, '
+          'completed=$_artworkLoadsCompleted, succeeded=$_artworkLoadsSucceeded, '
+          'null=$_artworkLoadsReturnedNull, exceptionFailed=$_artworkLoadsFailed, '
           'diskHit=$_diskCacheHits, diskMiss=$_diskCacheMisses, '
           'gateRejected=${_loadGate.rejectedLoads}',
           name: 'yazen.artwork.metrics',
@@ -478,12 +515,22 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     bool cropContentBounds,
   ) async {
     Uint8List? bytes;
+    final sourceAttempts = <Map<String, Object?>>[];
+    String? failureReason;
+    int? httpStatusCode;
+    final sourceKind =
+        track?.isLocal == true
+            ? 'local'
+            : (track?.artworkUri != null || imageUri != null
+                ? 'remote'
+                : 'unknown');
     final sourceSpan = DiagnosticsService.instance.startSpan(
       'artwork_source_fetch',
       data: <String, Object?>{
-        'source': track?.isLocal == true ? 'local' : 'remote',
+        'source': sourceKind,
         'pixels': pixels,
-        'trackId': track?.id,
+        'cacheKeyFingerprint':
+            key == null ? null : DiagnosticsService.diagnosticFingerprint(key),
       },
     );
     try {
@@ -498,21 +545,62 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
             size: pixels,
             quality: 86,
           );
+          sourceAttempts.add(<String, Object?>{
+            'source': 'media_store_artwork',
+            'success': bytes != null && bytes.isNotEmpty,
+            'encodedBytes': bytes?.length,
+          });
+          if (bytes == null || bytes.isEmpty) {
+            failureReason = 'media_store_artwork_not_found';
+          }
+        } else {
+          failureReason = 'invalid_media_store_id';
         }
-        if (bytes == null && !localTrack.isVideo) {
+        if ((bytes == null || bytes.isEmpty) && !localTrack.isVideo) {
           bytes = await _readOriginalArtwork(localTrack.uri, pixels);
+          sourceAttempts.add(<String, Object?>{
+            'source': 'embedded_artwork_fallback',
+            'success': bytes != null && bytes.isNotEmpty,
+            'encodedBytes': bytes?.length,
+          });
+          if (bytes == null || bytes.isEmpty) {
+            failureReason = 'embedded_artwork_unavailable';
+          } else {
+            failureReason = null;
+          }
+        } else if ((bytes == null || bytes.isEmpty) && localTrack.isVideo) {
+          failureReason = 'video_artwork_unavailable';
         }
       } else {
         final uri = track?.artworkUri ?? imageUri;
-        if (uri != null) {
+        if (uri == null) {
+          failureReason = 'missing_artwork_uri';
+        } else {
           try {
             final response = await http
                 .get(uri)
                 .timeout(const Duration(seconds: 5));
+            httpStatusCode = response.statusCode;
+            sourceAttempts.add(<String, Object?>{
+              'source': 'http_artwork',
+              'statusCode': response.statusCode,
+              'success':
+                  response.statusCode == 200 && response.bodyBytes.isNotEmpty,
+              'encodedBytes': response.bodyBytes.length,
+            });
             if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
               bytes = response.bodyBytes;
+              failureReason = null;
+            } else if (response.statusCode != 200) {
+              failureReason = 'http_status_${response.statusCode}';
+            } else {
+              failureReason = 'empty_http_body';
             }
           } catch (error, stackTrace) {
+            failureReason =
+                error is TimeoutException
+                    ? 'network_timeout'
+                    : 'network_request_failed';
             developer.log(
               'Remote artwork request failed',
               name: 'yazen.artwork',
@@ -523,25 +611,37 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         }
       }
     } catch (error) {
-      DiagnosticsService.instance.endSpan(
-        sourceSpan,
-        'failed',
-        <String, Object?>{'error': error.toString()},
-      );
+      DiagnosticsService.instance
+          .endSpan(sourceSpan, 'failed', <String, Object?>{
+            'errorType': error.runtimeType.toString(),
+            'failureReason': 'source_exception',
+          });
       rethrow;
     }
-    DiagnosticsService.instance.endSpan(
-      sourceSpan,
-      'complete',
-      <String, Object?>{
-        'success': bytes != null && bytes.isNotEmpty,
-        'encodedBytes': bytes?.length,
-      },
-    );
+    DiagnosticsService.instance
+        .endSpan(sourceSpan, 'complete', <String, Object?>{
+          'success': bytes != null && bytes.isNotEmpty,
+          'failureReason':
+              bytes != null && bytes.isNotEmpty
+                  ? null
+                  : (failureReason ?? 'empty_artwork_result'),
+          'sourceAttempts': sourceAttempts,
+          'httpStatusCode': httpStatusCode,
+          'encodedBytes': bytes?.length,
+        });
     if (bytes == null || bytes.isEmpty) return null;
 
     final sourceKey = _sourceKeyFor(track, imageUri);
-    if (sourceKey == null) return null;
+    if (sourceKey == null) {
+      DiagnosticsService.instance.record(
+        'artwork_processing_skipped',
+        <String, Object?>{
+          'reason': 'missing_source_cache_key',
+          'pixels': pixels,
+        },
+      );
+      return null;
+    }
     ProcessedArtwork processed;
     if (!cropContentBounds) {
       // Thumbnails are already requested at display resolution. Reading the
@@ -577,7 +677,7 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
         DiagnosticsService.instance.endSpan(
           cropSpan,
           'failed',
-          <String, Object?>{'error': error.toString()},
+          <String, Object?>{'errorType': error.runtimeType.toString()},
         );
         debugPrint(
           'Unable to inspect artwork content; using original image: '
@@ -611,23 +711,31 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
   ) async {
     final span = DiagnosticsService.instance.startSpan(
       'artwork_disk_cache_write',
-      data: <String, Object?>{'cacheKey': key, 'bytes': artwork.bytes.length},
+      data: <String, Object?>{
+        'cacheKeyFingerprint': DiagnosticsService.diagnosticFingerprint(key),
+        'bytes': artwork.bytes.length,
+      },
     );
     try {
-      final written = await ArtworkDiskCache.instance.write(
+      final result = await ArtworkDiskCache.instance.write(
         key,
         artwork.bytes,
         width: artwork.width,
         height: artwork.height,
       );
-      DiagnosticsService.instance.endSpan(
-        span,
-        written ? 'complete' : 'skipped',
-        <String, Object?>{'written': written},
-      );
+      final outcome = switch (result) {
+        ArtworkDiskWriteResult.written => 'complete',
+        ArtworkDiskWriteResult.rejectedByGate => 'rejected',
+        ArtworkDiskWriteResult.skippedInvalidPayload => 'skipped',
+        ArtworkDiskWriteResult.failed => 'failed',
+      };
+      DiagnosticsService.instance.endSpan(span, outcome, <String, Object?>{
+        'result': result.name,
+        'written': result == ArtworkDiskWriteResult.written,
+      });
     } catch (error) {
       DiagnosticsService.instance.endSpan(span, 'failed', <String, Object?>{
-        'error': error.toString(),
+        'errorType': error.runtimeType.toString(),
       });
       rethrow;
     }
@@ -656,7 +764,7 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
       DiagnosticsService.instance.endSpan(
         decodeSpan,
         'failed',
-        <String, Object?>{'error': error.toString()},
+        <String, Object?>{'errorType': error.runtimeType.toString()},
       );
       rethrow;
     } finally {
@@ -722,7 +830,12 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
                   _lastRenderedCacheKey = _cacheKey;
                   DiagnosticsService.instance
                       .record('artwork_first_frame_visible', <String, Object?>{
-                        'cacheKey': _cacheKey,
+                        'cacheKeyFingerprint':
+                            _cacheKey == null
+                                ? null
+                                : DiagnosticsService.diagnosticFingerprint(
+                                  _cacheKey!,
+                                ),
                         'timeToFirstVisibleFrameUs':
                             DiagnosticsService.instance.elapsedMicroseconds -
                             _loadStartedAtUs,

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 
+enum LoadPermitResult { acquired, queueEvicted, queueFull }
+
 /// Limits concurrent asynchronous work and bounds the waiting backlog.
 ///
 /// When the queue is full, the oldest pending request is rejected. This is
@@ -26,27 +28,34 @@ class BoundedLoadGate {
   /// When true, newer viewport work is released before stale queued work.
   /// Keep the default FIFO behavior for ordered/background operations.
   final bool preferNewest;
-  final Queue<Completer<bool>> _waiters = Queue<Completer<bool>>();
+  final Queue<Completer<LoadPermitResult>> _waiters =
+      Queue<Completer<LoadPermitResult>>();
   int _activeLoads = 0;
   int _rejectedLoads = 0;
+  int _queueEvictions = 0;
+  int _queueFullRejections = 0;
 
   int get activeLoads => _activeLoads;
   int get rejectedLoads => _rejectedLoads;
+  int get queueEvictions => _queueEvictions;
+  int get queueFullRejections => _queueFullRejections;
   int get queuedLoads => _waiters.length;
 
-  /// Returns false when this request was discarded while waiting.
-  Future<bool> acquire() {
+  /// Returns a precise result so callers can distinguish an evicted stale
+  /// waiter from a request rejected because no queue capacity exists.
+  Future<LoadPermitResult> acquireWithResult() {
     if (_activeLoads < maxConcurrent) {
       _activeLoads++;
-      return Future<bool>.value(true);
+      return Future<LoadPermitResult>.value(LoadPermitResult.acquired);
     }
 
     if (maxQueued == 0) {
       _rejectedLoads++;
-      return Future<bool>.value(false);
+      _queueFullRejections++;
+      return Future<LoadPermitResult>.value(LoadPermitResult.queueFull);
     }
 
-    final waiter = Completer<bool>();
+    final waiter = Completer<LoadPermitResult>();
     if (preferNewest) {
       _waiters.addFirst(waiter);
     } else {
@@ -57,11 +66,16 @@ class BoundedLoadGate {
           preferNewest ? _waiters.removeLast() : _waiters.removeFirst();
       if (!stale.isCompleted) {
         _rejectedLoads++;
-        stale.complete(false);
+        _queueEvictions++;
+        stale.complete(LoadPermitResult.queueEvicted);
       }
     }
     return waiter.future;
   }
+
+  /// Backwards-compatible boolean API for existing thumbnail/cache callers.
+  Future<bool> acquire() async =>
+      await acquireWithResult() == LoadPermitResult.acquired;
 
   /// Releases a permit, transferring it directly to the next prioritized
   /// waiter so the active count never briefly drops below the limit.
@@ -73,7 +87,7 @@ class BoundedLoadGate {
     while (_waiters.isNotEmpty) {
       final next = _waiters.removeFirst();
       if (!next.isCompleted) {
-        next.complete(true);
+        next.complete(LoadPermitResult.acquired);
         return;
       }
     }
