@@ -204,7 +204,7 @@ class _YazenMediaArtworkState extends State<YazenMediaArtwork> {
     final cached = key == null ? null : _readCache(key);
     // Keep the previous frame visible until replacement art is ready; cached
     // low-resolution art is still replaced by its high-resolution variant.
-    if (cached != null && cached.bytes.isNotEmpty) {
+    if (key != null && cached != null && cached.bytes.isNotEmpty) {
       DiagnosticsService.instance.record(
         'artwork_memory_cache_hit',
         <String, Object?>{

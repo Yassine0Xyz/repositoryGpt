@@ -88,6 +88,14 @@ class DiagnosticsService {
   int _scrollSessions = 0;
   int _pointerMoves = 0;
   int _pointerSessions = 0;
+  int _pointerInterrupted = 0;
+  int _scrollInterrupted = 0;
+  int _pointerCompleted = 0;
+  int _pointerCancelled = 0;
+  int _pointerTapCandidates = 0;
+  int _pointerDragCandidates = 0;
+  int _pointerLongPressCandidates = 0;
+  int _scrollCompleted = 0;
   int _routeChanges = 0;
   int _artworkLoadsStarted = 0;
   int _artworkLoadsCompleted = 0;

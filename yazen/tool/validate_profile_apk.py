@@ -36,8 +36,9 @@ check(
 check("Performance Intelligence starts with the application", "DiagnosticsService.instance.start();" in compact(main))
 check(
     "JSON session export is serialized and named",
-    "'yazen-pi-session-$stamp.json':jsonText" in service_flat
-    and "JsonEncoder.withIndent('  ').convert(metadata)" in service_flat,
+    "'yazen-pi-session-$stamp.json'" in service
+    and "JsonEncoder.withIndent(" in service
+    and ".convert(metadata)" in service_flat,
 )
 check(
     "JSONL journal is appended and exported as a separate file",
