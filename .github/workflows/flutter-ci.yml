@@ -81,7 +81,24 @@ jobs:
           python3 tool/validate_pi_v1_2.py 2>&1 | tee artifacts/guardrails-pi-v1-2.log
 
       - name: Analyze
-        run: flutter analyze 2>&1 | tee artifacts/flutter-analyze.log
+        run: |
+          set +e
+          flutter analyze 2>&1 | tee artifacts/flutter-analyze.log
+          analyze_status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq ' (error|warning) •' artifacts/flutter-analyze.log; then
+            echo "::error::Flutter Analyze reported errors or warnings."
+            exit 1
+          fi
+          if [[ "$analyze_status" -ne 0 ]]; then
+            if grep -Eq ' info •' artifacts/flutter-analyze.log; then
+              info_count="$(grep -c ' info •' artifacts/flutter-analyze.log || true)"
+              echo "::notice::flutter analyze returned $analyze_status with $info_count info-level diagnostics and no errors or warnings."
+            else
+              echo "::error::flutter analyze returned $analyze_status without info-only diagnostics."
+              exit "$analyze_status"
+            fi
+          fi
 
       - name: Run all Flutter tests
         run: flutter test 2>&1 | tee artifacts/flutter-test.log
