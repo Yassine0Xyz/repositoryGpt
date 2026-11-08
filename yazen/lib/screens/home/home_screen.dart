@@ -442,12 +442,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Column(
                                 children: availableSorts
                                     .map(
-                                      (sort) => RadioListTile<LibrarySort>(
-                                        dense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                        value: sort,
-                                        title: Text(_sortLabel(sort)),
-                                        activeColor: tokens.accent,
+                                      (sort) => Material(
+                                        color: Colors.transparent,
+                                        child: RadioListTile<LibrarySort>(
+                                          dense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          value: sort,
+                                          title: Text(_sortLabel(sort)),
+                                          activeColor: tokens.accent,
+                                        ),
                                       ),
                                     )
                                     .toList(growable: false),
@@ -556,21 +559,24 @@ class _MoreOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.read<ThemeProvider>().tokens;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      leading: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: tokens.accent.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(14),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: tokens.accent.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: tokens.accent),
         ),
-        child: Icon(icon, color: tokens.accent),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: onTap,
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: onTap,
     );
   }
 }

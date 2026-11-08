@@ -36,39 +36,36 @@ class TrackActionsMenu extends StatelessWidget {
             break;
         }
       },
-      itemBuilder:
-          (context) => <PopupMenuEntry<_TrackRowAction>>[
-            if (onFavorite != null)
-              PopupMenuItem<_TrackRowAction>(
-                value: _TrackRowAction.favorite,
-                child: Row(
-                  children: <Widget>[
-                    Icon(
-                      isFavorite
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      size: 20,
-                      color: isFavorite ? accentColor : secondaryColor,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      isFavorite ? 'Remove from favorites' : 'Add to favorites',
-                    ),
-                  ],
+      itemBuilder: (context) => <PopupMenuEntry<_TrackRowAction>>[
+        if (onFavorite != null)
+          PopupMenuItem<_TrackRowAction>(
+            value: _TrackRowAction.favorite,
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  isFavorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  size: 20,
+                  color: isFavorite ? accentColor : secondaryColor,
                 ),
-              ),
-            if (onAddToPlaylist != null)
-              const PopupMenuItem<_TrackRowAction>(
-                value: _TrackRowAction.addToPlaylist,
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.playlist_add_rounded, size: 20),
-                    SizedBox(width: 12),
-                    Text('Add to playlist'),
-                  ],
-                ),
-              ),
-          ],
+                const SizedBox(width: 12),
+                Text(isFavorite ? 'Remove from favorites' : 'Add to favorites'),
+              ],
+            ),
+          ),
+        if (onAddToPlaylist != null)
+          const PopupMenuItem<_TrackRowAction>(
+            value: _TrackRowAction.addToPlaylist,
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.playlist_add_rounded, size: 20),
+                SizedBox(width: 12),
+                Text('Add to playlist'),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

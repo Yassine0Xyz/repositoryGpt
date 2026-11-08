@@ -115,10 +115,8 @@ class HybridMusicApp extends StatelessWidget {
                       onPointerDown: DiagnosticsService.instance.pointerDown,
                       onPointerMove: DiagnosticsService.instance.pointerMove,
                       onPointerUp: DiagnosticsService.instance.pointerUp,
-                      onPointerCancel:
-                          DiagnosticsService.instance.pointerCancel,
-                      onPointerSignal:
-                          DiagnosticsService.instance.pointerSignal,
+                      onPointerCancel: DiagnosticsService.instance.pointerCancel,
+                      onPointerSignal: DiagnosticsService.instance.pointerSignal,
                       child: NotificationListener<ScrollNotification>(
                         onNotification: (notification) {
                           final metrics = notification.metrics;
@@ -128,6 +126,8 @@ class HybridMusicApp extends StatelessWidget {
                               axis: metrics.axis.name,
                               pixels: metrics.pixels,
                               depth: notification.depth,
+                              sourceTimeStamp:
+                                  notification.dragDetails?.sourceTimeStamp,
                             );
                           } else if (notification is ScrollUpdateNotification) {
                             DiagnosticsService.instance.scrollUpdated(
@@ -136,6 +136,8 @@ class HybridMusicApp extends StatelessWidget {
                               delta: notification.scrollDelta,
                               pixels: metrics.pixels,
                               maxExtent: metrics.maxScrollExtent,
+                              sourceTimeStamp:
+                                  notification.dragDetails?.sourceTimeStamp,
                             );
                           } else if (notification is ScrollEndNotification) {
                             ScrollPerformanceMode.noteScrollEnd();

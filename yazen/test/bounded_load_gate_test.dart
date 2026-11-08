@@ -68,30 +68,27 @@ void main() {
       expect(gate.activeLoads, 0);
     });
 
-    test(
-      'drops oldest viewport request when newest-first queue is full',
-      () async {
-        final gate = BoundedLoadGate(
-          maxConcurrent: 1,
-          maxQueued: 2,
-          preferNewest: true,
-        );
+    test('drops oldest viewport request when newest-first queue is full', () async {
+      final gate = BoundedLoadGate(
+        maxConcurrent: 1,
+        maxQueued: 2,
+        preferNewest: true,
+      );
 
-        expect(await gate.acquire(), isTrue);
-        final oldest = gate.acquire();
-        final middle = gate.acquire();
-        final newest = gate.acquire();
+      expect(await gate.acquire(), isTrue);
+      final oldest = gate.acquire();
+      final middle = gate.acquire();
+      final newest = gate.acquire();
 
-        expect(gate.queuedLoads, 2);
-        expect(await oldest, isFalse);
-        gate.release();
-        expect(await newest, isTrue);
-        gate.release();
-        expect(await middle, isTrue);
-        gate.release();
-        expect(gate.activeLoads, 0);
-      },
-    );
+      expect(gate.queuedLoads, 2);
+      expect(await oldest, isFalse);
+      gate.release();
+      expect(await newest, isTrue);
+      gate.release();
+      expect(await middle, isTrue);
+      gate.release();
+      expect(gate.activeLoads, 0);
+    });
 
     test('rejects queued work immediately when maxQueued is zero', () async {
       final gate = BoundedLoadGate(maxConcurrent: 1, maxQueued: 0);
